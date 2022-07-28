@@ -1,0 +1,14 @@
+{
+    "code": "083932",
+    "message": "Dear User, this payment method is unsupported on Binance P2P. You can still buy and sell cryptocurrency on our official partner's platform https://www.pexpay.com/en",
+    "messageDetail": {
+        "title": null,
+        "type": null,
+        "icon": null,
+        "action": null,
+        "linkTitle": null,
+        "linkUrl": null
+    },
+    "data": null,
+    "success": false
+}

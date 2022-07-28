@@ -1,0 +1,10 @@
+<select class = 'custom-select mb-4' name='course'>
+  <option selected>
+    Open this select menu
+  </option>
+  {% for payment_method in payment_methods %}
+    <option value='{{ payment_method.pk }}'>
+      {{ payment_method.display_name }}
+    </option>
+  {% endfor %}
+</select>
