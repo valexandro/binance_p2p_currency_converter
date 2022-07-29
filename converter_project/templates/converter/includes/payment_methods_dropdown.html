@@ -1,0 +1,9 @@
+{{ payment_method_type }}
+<select class="custom-select mb-4"
+        name="{% if payment_method_type == 'SELL' %}sell_payment_method{% elif payment_method_type == 'BUY' %}buy_payment_method{% endif %}">
+  {% for payment_method in payment_methods %}
+    <option value='{{ payment_method.pk }}'>
+      {{ payment_method.display_name }}
+    </option>
+  {% endfor %}
+</select>

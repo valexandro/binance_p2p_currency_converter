@@ -1,11 +1,12 @@
-from locale import currency
-from multiprocessing import context
+import time
 from typing import Any, Dict
+
 from django.shortcuts import render
 from django.views.generic import TemplateView
 
 from .models import Currency, PaymentMethod
 from .utils.json_parser import parse_payment_methods
+
 # Create your views here.
 
 PATHS = {
@@ -14,37 +15,39 @@ PATHS = {
 }
 
 
-class IndexView(TemplateView):
-    template_name = 'converter/index.html'
+def index(request):
+    template = 'converter/index.html'
+    if request.method == 'GET':
+        context = {
+            'currencies': Currency.objects.all(),
+        }
+        return render(request, template, context)
 
-    def get_context_data(self, **kwargs: Any) -> Dict[str, Any]:
-        context = super().get_context_data(**kwargs)
-        context['currencies'] = Currency.objects.all()
-        return context
+    if request.method == 'POST':
+        context = {
+            'currencies': Currency.objects.all(),
+            'POST': request.POST,
+        }
+        return render(request, template, context)
 
 
 def get_payment_methods(request):
-    sell_currency_id = request.GET.get('sell_currency')
-    buy_currency_id = request.GET.get('buy_currency')
-    if sell_currency_id and not buy_currency_id:
-        sell_currency: Currency = Currency.objects.get(pk=sell_currency_id)
-        parse_payment_methods(PATHS[sell_currency.code])
-        sell_payment_methods = PaymentMethod.objects.filter(
-            currency=sell_currency)
-        context = {
-            'sell_payment_methods': sell_payment_methods,
-        }
-        return render(request,
-                      'converter/includes/sell_payment_methods_dropdown.html',
-                      context)
-    elif buy_currency_id and not sell_currency_id:
-        buy_currency: Currency = Currency.objects.get(pk=buy_currency_id)
-        parse_payment_methods(PATHS[buy_currency.code])
-        buy_payment_methods = PaymentMethod.objects.filter(
-            currency=buy_currency)
-        context = {
-            'buy_payment_methods': buy_payment_methods,
-        }
-        return render(request,
-                      'converter/includes/buy_payment_methods_dropdown.html',
-                      context)
+    context = {}
+    if request.GET.get('sell_currency'):
+        currency_id_to_parse = request.GET.get('sell_currency')
+        context['payment_method_type'] = 'SELL'
+        time.sleep(0.1)
+    elif request.GET.get('buy_currency'):
+        currency_id_to_parse = request.GET.get('buy_currency')
+        context['payment_method_type'] = 'BUY'
+        # to address SQlite limitation on concurrent requests
+        time.sleep(0.2)
+    currency: Currency = Currency.objects.get(pk=currency_id_to_parse)
+    parse_payment_methods(PATHS[currency.code])
+    payment_methods = PaymentMethod.objects.filter(
+        currency=currency)
+
+    context['payment_methods'] = payment_methods
+    return render(request,
+                  'converter/includes/payment_methods_dropdown.html',
+                  context)

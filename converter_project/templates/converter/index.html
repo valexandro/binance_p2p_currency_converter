@@ -1,5 +1,10 @@
 {% extends "base.html" %}
 {% block content %}
-  {% include 'converter/includes/currency_dropdown.html' with currency_type='SELL' %}
-  {% include 'converter/includes/currency_dropdown.html' with currency_type='BUY' %}
+  POST {{ POST }}
+  <form action "{% url 'converter:index' %}" method="post">
+    {% csrf_token %}
+    {% include 'converter/includes/currency_dropdown.html' with currency_type='SELL' %}
+    {% include 'converter/includes/currency_dropdown.html' with currency_type='BUY' %}
+    <button type="submit" class="btn btn-primary">Convert</button>
+  </form>
 {% endblock content %}
