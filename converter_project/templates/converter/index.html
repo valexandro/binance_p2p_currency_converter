@@ -1,18 +1,5 @@
 {% extends "base.html" %}
 {% block content %}
-  <select class="custom-select mb-4"
-          name='sell_currency'
-          hx-get="{% url 'payment_methods' %}"
-          hx-trigger="change"
-          hx-target="#payment_methods">
-    <option selected>
-      Open this select menu
-    </option>
-    {% for currency in sell_currencies %}
-      <option value='{{ currency.pk }}'>
-        {{ currency.code }}
-      </option>
-    {% endfor %}
-  </select>
-  <div id='payment_methods'>{% include 'converter/includes/payment_methods.html' %}</div>
+  {% include 'converter/includes/currency_dropdown.html' with currency_type='SELL' %}
+  {% include 'converter/includes/currency_dropdown.html' with currency_type='BUY' %}
 {% endblock content %}

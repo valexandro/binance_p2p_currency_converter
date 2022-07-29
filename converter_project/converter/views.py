@@ -1,4 +1,5 @@
 from locale import currency
+from multiprocessing import context
 from typing import Any, Dict
 from django.shortcuts import render
 from django.views.generic import TemplateView
@@ -18,14 +19,32 @@ class IndexView(TemplateView):
 
     def get_context_data(self, **kwargs: Any) -> Dict[str, Any]:
         context = super().get_context_data(**kwargs)
-        context['sell_currencies'] = Currency.objects.all()
-        context['buy_currencies'] = Currency.objects.all()
+        context['currencies'] = Currency.objects.all()
         return context
 
 
 def get_payment_methods(request):
-    currency_id = request.GET.get('sell_currency')
-    currency: Currency = Currency.objects.get(pk=currency_id)
-    parse_payment_methods(PATHS[currency.code])
-    payment_methods = PaymentMethod.objects.filter(currency=currency)
-    return render(request, 'converter/includes/payment_methods.html', {'payment_methods': payment_methods})
+    sell_currency_id = request.GET.get('sell_currency')
+    buy_currency_id = request.GET.get('buy_currency')
+    if sell_currency_id and not buy_currency_id:
+        sell_currency: Currency = Currency.objects.get(pk=sell_currency_id)
+        parse_payment_methods(PATHS[sell_currency.code])
+        sell_payment_methods = PaymentMethod.objects.filter(
+            currency=sell_currency)
+        context = {
+            'sell_payment_methods': sell_payment_methods,
+        }
+        return render(request,
+                      'converter/includes/sell_payment_methods_dropdown.html',
+                      context)
+    elif buy_currency_id and not sell_currency_id:
+        buy_currency: Currency = Currency.objects.get(pk=buy_currency_id)
+        parse_payment_methods(PATHS[buy_currency.code])
+        buy_payment_methods = PaymentMethod.objects.filter(
+            currency=buy_currency)
+        context = {
+            'buy_payment_methods': buy_payment_methods,
+        }
+        return render(request,
+                      'converter/includes/buy_payment_methods_dropdown.html',
+                      context)

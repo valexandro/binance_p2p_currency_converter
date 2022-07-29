@@ -11,7 +11,7 @@ def parse_payment_methods(path: str):
         trade_methods = raw_offer['adv']['tradeMethods']
         currency = raw_offer['adv']['fiatUnit']
         for trade_method in trade_methods:
-            PaymentMethod.objects.get_or_create(
+            PaymentMethod.objects.update_or_create(
                 short_name=trade_method['identifier'],
                 display_name=trade_method['tradeMethodName'],
                 currency=Currency.objects.get(code=currency)

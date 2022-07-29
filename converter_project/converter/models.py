@@ -16,6 +16,12 @@ class PaymentMethod(models.Model):
     display_name = models.CharField(null=True, max_length=50)
     currency = models.ForeignKey(
         Currency, on_delete=models.CASCADE, related_name='payment_methods')
+    date_updated = models.DateTimeField(auto_now=True)
+
+    def __str__(self) -> str:
+        if self.display_name:
+            return self.display_name
+        return 'Unknown'
 
 
 class Seller(models.Model):

@@ -1,0 +1,23 @@
+<select class="custom-select mb-4"
+        {% if currency_type == 'SELL' %} name='sell_currency' {% elif currency_type == 'BUY' %} name='buy_currency' {% endif %}
+        hx-get="{% url 'payment_methods' %}"
+        hx-trigger="change"
+        {% if currency_type == 'SELL' %} hx-target="#sell_payment_methods" {% elif currency_type == 'BUY' %} hx-target="#buy_payment_methods" {% endif %}>
+  <option selected>
+    Currency {{ currency_type }}
+  </option>
+  {% for currency in currencies %}
+    <option value='{{ currency.pk }}'>
+      {{ currency.code }}
+    </option>
+  {% endfor %}
+</select>
+{% if currency_type == 'SELL' %}
+  <div id='sell_payment_methods'>
+    {% include 'converter/includes/sell_payment_methods_dropdown.html' %}
+  </div>
+{% elif currency_type == 'BUY' %}
+  <div id='buy_payment_methods'>
+    {% include 'converter/includes/buy_payment_methods_dropdown.html' %}
+  </div>
+{% endif %}

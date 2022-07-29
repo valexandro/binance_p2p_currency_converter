@@ -1,0 +1,10 @@
+BUY {{buy_payment_methods}}
+<select class = 'custom-select mb-4' name='buy_payment_methods'>
+  <option selected>
+  </option>
+  {% for payment_method in buy_payment_methods %}
+    <option value='{{ payment_method.pk }}'>
+      {{ payment_method.display_name }}
+    </option>
+  {% endfor %}
+</select>
