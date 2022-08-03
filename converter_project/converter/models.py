@@ -1,17 +1,19 @@
 from django.db import models
 
-# Create your models here.
-
 
 class Currency(models.Model):
+    """Fiat currency to convert."""
+
     code = models.CharField(max_length=10)
     name = models.CharField(max_length=100)
 
-    def __str__(self):
+    def __str__(self) -> str:
         return self.code
 
 
 class PaymentMethod(models.Model):
+    """Payment methods available for currency conversion."""
+
     short_name = models.CharField(max_length=50)
     display_name = models.CharField(null=True, max_length=50)
     currency = models.ForeignKey(
@@ -21,10 +23,12 @@ class PaymentMethod(models.Model):
     def __str__(self) -> str:
         if self.display_name:
             return self.display_name
-        return 'Unknown'
+        return 'Unknown payment method'
 
 
 class Seller(models.Model):
+    """Seller who offer currency conversion service."""
+
     name = models.CharField(max_length=50)
     is_merchant = models.BooleanField()
     month_finish_rate = models.FloatField()
@@ -33,17 +37,18 @@ class Seller(models.Model):
 
 
 class TradeType(models.Model):
+    """Buy means buy USDT from seller."""
+
     BUY = 'BUY'
     SELL = 'SEL'
-    trade_types = (
-        (BUY, 'Buy'),
-        (SELL, 'Sell'),
-    )
+
     trade_type = models.CharField(
-        max_length=3, choices=trade_types, default=BUY)
+        max_length=3, default=BUY)
 
 
 class Offer(models.Model):
+    """Offer for currency conversion."""
+
     currency = models.ForeignKey(
         Currency, on_delete=models.CASCADE, related_name='offers')
     seller = models.ForeignKey(

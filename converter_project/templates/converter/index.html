@@ -1,10 +1,17 @@
 {% extends "base.html" %}
+{% load widget_tweaks %}
 {% block content %}
-  POST {{ POST }}
+POST {{ POST }}
   <form action "{% url 'converter:index' %}" method="post">
     {% csrf_token %}
-    {% include 'converter/includes/currency_dropdown.html' with currency_type='SELL' %}
-    {% include 'converter/includes/currency_dropdown.html' with currency_type='BUY' %}
+    {{ form.sell_currency.label_tag }}
+    {% render_field form.sell_currency class="custom-select mb-4" autocomplete="off" hx-get="/payment_methods/" hx-target="#id_sell_payment_methods" %}
+    {{ form.sell_payment_methods.label_tag }}
+    {% render_field form.sell_payment_methods class="custom-select mb-4" autocomplete="off" %}
+    {{ form.buy_currency.label_tag }}
+    {% render_field form.buy_currency class="custom-select mb-4" autocomplete="off" hx-get="/payment_methods/" hx-target="#id_buy_payment_methods" %}
+    {{ form.buy_payment_methods.label_tag }}
+    {% render_field form.buy_payment_methods class="custom-select mb-4" autocomplete="off" %}
     <button type="submit" class="btn btn-primary">Convert</button>
   </form>
 {% endblock content %}
