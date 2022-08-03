@@ -11,8 +11,8 @@ PATHS = {
 }
 
 
-def index(request):
-    """Handle requests to main page of converter."""
+def index(request) -> HttpResponse:
+    """Handle requests to main converter page."""
     template = 'converter/index.html'
     form = ConverterForm()
     context = {
@@ -27,8 +27,15 @@ def index(request):
     return render(request, template, context)
 
 
-def get_payment_methods(request):
-    """Return payment method options as HTML."""
+def get_payment_methods(request) -> HttpResponse:
+    """Return payment method options for requested currency as HTML select options.
+
+    Implemented by DynamicField in ConverterForm.
+    Call to forms '*payment_methods' field for requested currency,
+    will trigger forms method to fetch payment methods for this currency,
+    and assign resulting queryset to choisefield queryset, that will be
+    returned as HTML.
+    """
     form = ConverterForm(request.GET)
     currency_payment_method = {
         'sell_currency': 'sell_payment_methods',
