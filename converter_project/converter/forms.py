@@ -5,8 +5,6 @@ from dynamic_forms import DynamicField, DynamicFormMixin
 
 from .models import Currency, PaymentMethod
 
-# TODO Add warning if no payment methods found
-
 
 class ConverterForm(DynamicFormMixin, forms.Form):
     """Currency converter form."""
@@ -61,9 +59,15 @@ class ConverterForm(DynamicFormMixin, forms.Form):
         forms.ModelChoiceField,
         queryset=get_sell_payment_methods,
         initial=initial_sell_payment_method,
+        error_messages={
+            'invalid_choice': "Payment methods for selected currency doesn't exist"
+        }
     )
     buy_payment_methods = DynamicField(
         forms.ModelChoiceField,
         queryset=get_buy_payment_methods,
         initial=initial_buy_payment_method,
+        error_messages={
+            'invalid_choice': "Payment methods for selected currency doesn't exist"
+        }
     )

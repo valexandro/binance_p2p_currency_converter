@@ -2,6 +2,7 @@ from django.http import HttpResponse
 from django.shortcuts import render
 
 from .forms import ConverterForm
+from .models import Currency, PaymentMethod
 
 # Create your views here.
 
@@ -14,16 +15,12 @@ PATHS = {
 def index(request) -> HttpResponse:
     """Handle requests to main converter page."""
     template = 'converter/index.html'
-    form = ConverterForm()
+    form = ConverterForm(request.POST or None)
     context = {
         'form': form,
     }
-    if request.method == 'POST':
-        form = ConverterForm(request.POST)
-        context = {
-            'form': form,
-            'POST': request.POST,
-        }
+    if form.is_valid():
+        context['POST'] = request.POST
     return render(request, template, context)
 
 
@@ -41,6 +38,11 @@ def get_payment_methods(request) -> HttpResponse:
         'sell_currency': 'sell_payment_methods',
         'buy_currency': 'buy_payment_methods',
     }
-    for currency, payment_method in currency_payment_method.items():
-        if currency in request.GET.keys():
+    for currency_type, payment_method in currency_payment_method.items():
+        if currency_type in request.GET.keys():
+            currency = Currency.objects.get(pk=request.GET.get(currency_type))
+            payment_methods = PaymentMethod.objects.filter(currency=currency)
+            if not payment_methods:
+                return HttpResponse(
+                    f'<option>Payment methods for {currency.code} not exists.</option>')
             return HttpResponse(form[payment_method])
