@@ -1,6 +1,9 @@
 from django.http import HttpResponse
 from django.shortcuts import render
 
+from .utils.json_parser import parse_payment_methods
+from .utils.binance_api import get_p2p_offers_data
+
 from .forms import ConverterForm
 from .models import Currency, PaymentMethod
 
@@ -41,6 +44,10 @@ def get_payment_methods(request) -> HttpResponse:
     for currency_type, payment_method in currency_payment_method.items():
         if currency_type in request.GET.keys():
             currency = Currency.objects.get(pk=request.GET.get(currency_type))
+            # json = PATHS[currency.code]
+            # parse_payment_methods(json)
+            json = get_p2p_offers_data(currency.code)
+            parse_payment_methods(json)
             payment_methods = PaymentMethod.objects.filter(currency=currency)
             if not payment_methods:
                 return HttpResponse(

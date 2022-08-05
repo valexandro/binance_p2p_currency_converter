@@ -3,8 +3,9 @@ import json
 from ..models import Currency, PaymentMethod
 
 
-def parse_payment_methods(path: str):
-    json_array = json.load(open(path))
+def parse_payment_methods(response_text: str):
+    # json_array = json.load(open(path))
+    json_array = json.loads(response_text)
     raw_offers = json_array['data']
 
     for raw_offer in raw_offers:
