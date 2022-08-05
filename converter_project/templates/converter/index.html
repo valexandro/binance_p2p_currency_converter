@@ -9,16 +9,34 @@
     {% render_field form.sell_currency class="custom-select mb-4" autocomplete="off" hx-get=payment_methods_url hx-target="#id_sell_payment_methods" %}
     {{ form.sell_payment_methods.label_tag }}
     {% if form.sell_payment_methods.errors %}
-      <div class="alert alert-danger">{{ form.sell_payment_methods.errors.as_text }}</div>
+      <div class="alert alert-danger">
+        {{ form.sell_payment_methods.errors.as_text }}
+      </div>
     {% endif %}
     {% render_field form.sell_payment_methods class="custom-select mb-4" autocomplete="off" %}
     {{ form.buy_currency.label_tag }}
     {% render_field form.buy_currency class="custom-select mb-4" autocomplete="off" hx-get=payment_methods_url hx-target="#id_buy_payment_methods" %}
     {{ form.buy_payment_methods.label_tag }}
     {% if form.buy_payment_methods.errors %}
-      <div class="alert alert-danger">{{ form.buy_payment_methods.errors.as_text }}</div>
+      <div class="alert alert-danger">
+        {{ form.buy_payment_methods.errors.as_text }}
+      </div>
     {% endif %}
     {% render_field form.buy_payment_methods class="custom-select mb-4" autocomplete="off" %}
+    {{ form.buy_amount.label_tag }}
+    {% render_field form.buy_amount class="custom-select mb-4" autocomplete="off" %}
+    {{ form.sell_amount.label_tag }}
+    {% render_field form.sell_amount class="custom-select mb-4" autocomplete="off" %}
     <button type="submit" class="btn btn-primary">Convert</button>
   </form>
+  <script>
+    $(document).ready(function() {
+       $("#id_buy_amount").keydown(function(){
+           $("#id_sell_amount").val("");
+       })
+       $("#id_sell_amount").keydown(function(){
+           $("#id_buy_amount").val("");
+       })
+    });
+  </script>
 {% endblock content %}
