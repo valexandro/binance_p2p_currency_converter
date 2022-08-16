@@ -1,3 +1,4 @@
+from dataclasses import dataclass
 from django.db import models
 
 
@@ -26,37 +27,38 @@ class PaymentMethod(models.Model):
         return 'Unknown payment method'
 
 
-class Seller(models.Model):
+@dataclass
+class Seller():
     """Seller who offer currency conversion service."""
 
-    name = models.CharField(max_length=50)
-    is_merchant = models.BooleanField()
-    month_finish_rate = models.FloatField()
-    month_orders_count = models.IntegerField()
-    user_id = models.CharField(max_length=200)
+    name: str
+    is_merchant: bool
+    month_finish_rate: float
+    month_orders_count: int
+    user_id: str
+
+    def __str__(self) -> str:
+        return f'{self.name} {self.month_finish_rate}'
 
 
-class TradeType(models.Model):
+class TradeType():
     """Buy means buy USDT from seller."""
 
     BUY = 'BUY'
-    SELL = 'SEL'
-
-    trade_type = models.CharField(
-        max_length=3, default=BUY)
+    SELL = 'SELL'
 
 
-class Offer(models.Model):
+@dataclass
+class Offer():
     """Offer for currency conversion."""
 
-    currency = models.ForeignKey(
-        Currency, on_delete=models.CASCADE, related_name='offers')
-    seller = models.ForeignKey(
-        Seller, on_delete=models.CASCADE, related_name='offers')
-    trade_type = models.ForeignKey(
-        TradeType, on_delete=models.CASCADE, related_name='offers')
+    currency: Currency
+    seller: Seller
+    trade_type: TradeType
+    price: float
+    min_amount: int
+    tradable_funds: float
+    offer_id: str
 
-    price = models.FloatField()
-    min_amount = models.IntegerField()
-    tradable_funds = models.FloatField()
-    offer_id = models.CharField(max_length=200)
+    def __str__(self) -> str:
+        return f'{self.seller} {self.price}'

@@ -2,7 +2,7 @@
 {% load widget_tweaks %}
 {% block content %}
   POST {{ POST }}
-  <form action "{% url 'converter:index' %}" method="post">
+  <form action="{% url 'converter:get_offers' %}" method="post">
     {% csrf_token %}
     {% url 'converter:payment_methods' as payment_methods_url %}
     {{ form.sell_currency.label_tag }}
@@ -27,8 +27,13 @@
     {% render_field form.buy_amount class="custom-select mb-4" autocomplete="off" %}
     {{ form.sell_amount.label_tag }}
     {% render_field form.sell_amount class="custom-select mb-4" autocomplete="off" %}
+    {{ form.is_merchant.label_tag }}
+    {% render_field form.is_merchant %}
     <button type="submit" class="btn btn-primary">Convert</button>
   </form>
+  <p>{{ conversion_rate }}</p>
+  {% for buy_offer in buy_offers %}<p>{{ buy_offer }}</p>{% endfor %}
+  {% for sell_offer in sell_offers %}<p>{{ sell_offer }}</p>{% endfor %}
   <script>
     $(document).ready(function() {
        $("#id_buy_amount").keydown(function(){

@@ -1,11 +1,16 @@
 """Methods to work with Binance api."""
 import requests
 
+PATHS = {
+    'RUB': '/home/shark1501/dev/p2p_converter/converter_project/test_data/10_records_RUB_mixed.json',
+    'TRY': '/home/shark1501/dev/p2p_converter/converter_project/test_data/10_records_TRY_mixed.json',
+}
 
-def get_p2p_offers_data(fiat: str,
+
+def get_p2p_offers_data(fiat_code: str,
                         is_merchant: bool = False,
                         payment_method: str = None,
-                        trans_amount: int = None,
+                        trans_amount: float = None,
                         trade_type: str = 'BUY',
                         rows: int = 10) -> str:
     """Make request to binance p2p api.
@@ -28,7 +33,7 @@ def get_p2p_offers_data(fiat: str,
         'publisherType': 'merchant' if is_merchant else None,
         'transAmount': trans_amount,
         'asset': 'USDT',
-        'fiat': fiat,
+        'fiat': fiat_code,
         'tradeType': trade_type,
     }
 
@@ -48,8 +53,9 @@ def get_p2p_offers_data(fiat: str,
         'User-Agent':
         'Mozilla/5.0 (Windows NT 10.0; rv:102.0) Gecko/20100101 Firefox/102.0',
     }
-    response = requests.post(
-        'https://p2p.binance.com/bapi/c2c/v2/friendly/c2c/adv/search',
-        headers=headers,
-        json=data)
-    return response.text
+    # response = requests.post(
+    #     'https://p2p.binance.com/bapi/c2c/v2/friendly/c2c/adv/search',
+    #     headers=headers,
+    #     json=data)
+    # return response.text
+    return PATHS[fiat_code]

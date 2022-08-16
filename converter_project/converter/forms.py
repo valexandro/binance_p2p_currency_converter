@@ -78,7 +78,9 @@ class ConverterForm(DynamicFormMixin, forms.Form):
     buy_amount = forms.FloatField(required=False)
     sell_amount = forms.FloatField(required=False)
 
-    # TODO Implement sell and buy amount fields.
+    is_merchant = forms.BooleanField(required=False, initial=True)
+    # TODO Handle same currency selected ib both dropbowns. Should throw error
+    # TODO install debug toolbar
     # Either of them can be filled.
     # if only sell_amount filled -
     # 1. get offers for sell currency with selected amount and payment method,
