@@ -13,70 +13,70 @@ class ConverterForm(DynamicFormMixin, forms.Form):
         'No payment methods for selected currency. '
         'Please select another currency.')
 
-    def get_sell_payment_methods(form: 'ConverterForm'
+    def get_from_payment_methods(form: 'ConverterForm'
                                  ) -> QuerySet[PaymentMethod]:
         """Get queryset of payment methods for selected currency.
 
         Will be used as callable with form argument by DynamicField field,
         as queryset source.
         """
-        sell_currency = form['sell_currency'].value()
-        return PaymentMethod.objects.filter(currency=sell_currency)
+        from_currency = form['from_currency'].value()
+        return PaymentMethod.objects.filter(currency=from_currency)
 
-    def get_buy_payment_methods(form: 'ConverterForm'
-                                ) -> QuerySet[PaymentMethod]:
+    def get_to_payment_methods(form: 'ConverterForm'
+                               ) -> QuerySet[PaymentMethod]:
         """Get queryset of payment methods for selected currency.
 
         Will be used as callable with form argument by DynamicField field,
         as queryset source.
         """
-        buy_currency = form['buy_currency'].value()
-        return PaymentMethod.objects.filter(currency=buy_currency)
+        to_currency = form['to_currency'].value()
+        return PaymentMethod.objects.filter(currency=to_currency)
 
-    def initial_sell_payment_method(form: 'ConverterForm'
+    def initial_from_payment_method(form: 'ConverterForm'
                                     ) -> PaymentMethod:
         """Get first payment method for selected currency.
 
         Will be used as callable with form argument by DynamicField field,
         as initial field value source.
         """
-        sell_currency = form['sell_currency'].value()
-        return PaymentMethod.objects.filter(currency=sell_currency).first()
+        from_currency = form['from_currency'].value()
+        return PaymentMethod.objects.filter(currency=from_currency).first()
 
-    def initial_buy_payment_method(form: 'ConverterForm'
-                                   ) -> PaymentMethod:
+    def initial_to_payment_method(form: 'ConverterForm'
+                                  ) -> PaymentMethod:
         """Get first payment method for selected currency.
 
         Will be used as callable with form argument by DynamicField field,
         as initial field value source.
         """
-        buy_currency = form['buy_currency'].value()
-        return PaymentMethod.objects.filter(currency=buy_currency).first()
+        to_currency = form['to_currency'].value()
+        return PaymentMethod.objects.filter(currency=to_currency).first()
 
-    sell_currency = forms.ModelChoiceField(
+    from_currency = forms.ModelChoiceField(
         queryset=Currency.objects.all()
     )
-    buy_currency = forms.ModelChoiceField(
+    to_currency = forms.ModelChoiceField(
         queryset=Currency.objects.all()
     )
-    sell_payment_methods = DynamicField(
+    from_payment_methods = DynamicField(
         forms.ModelChoiceField,
-        queryset=get_sell_payment_methods,
-        initial=initial_sell_payment_method,
+        queryset=get_from_payment_methods,
+        initial=initial_from_payment_method,
         error_messages={
             'invalid_choice': ERROR_MESSAGE,
         }
     )
-    buy_payment_methods = DynamicField(
+    to_payment_methods = DynamicField(
         forms.ModelChoiceField,
-        queryset=get_buy_payment_methods,
-        initial=initial_buy_payment_method,
+        queryset=get_to_payment_methods,
+        initial=initial_to_payment_method,
         error_messages={
             'invalid_choice': ERROR_MESSAGE,
         }
     )
-    buy_amount = forms.FloatField(required=False)
-    sell_amount = forms.FloatField(required=False)
+    from_amount = forms.FloatField(required=False)
+    to_amount = forms.FloatField(required=False)
 
     is_merchant = forms.BooleanField(required=False, initial=True)
     # TODO Handle same currency selected ib both dropbowns. Should throw error
