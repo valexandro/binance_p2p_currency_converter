@@ -1,6 +1,6 @@
 {% load user_filters %}
 <div class="row border rounded align-items-center my-1">
-  <div class="col-md-1 text-center">{{ forloop.counter }}</div>
+  <div class="col-md-1 text-center d-none d-md-flex">{{ forloop.counter }}</div>
   <div class="col-md-9">
     <div class="row">
       {% include 'converter/includes/offer_line.html' with offer=from_offer %}
@@ -9,7 +9,7 @@
       {% include 'converter/includes/offer_line.html' with offer=to_offer %}
     </div>
   </div>
-  <div class="col-md-2 text-left">
+  <div class="col-md-2 text-left d-none d-md-flex">
     {{ from_offer.price|divide:to_offer.price }} {{ from_offer.currency }}/{{ to_offer.currency }}
   </div>
 </div>

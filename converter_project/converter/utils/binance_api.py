@@ -1,6 +1,8 @@
 """Methods to work with Binance api."""
 import requests
 
+from ..models import TradeType
+
 PATHS = {
     'RUB': '/home/shark1501/dev/p2p_converter/converter_project/test_data/10_records_RUB_mixed.json',
     'TRY': '/home/shark1501/dev/p2p_converter/converter_project/test_data/10_records_TRY_mixed.json',
@@ -11,7 +13,7 @@ def get_p2p_offers_data(fiat_code: str,
                         is_merchant: bool = False,
                         payment_method: str = None,
                         trans_amount: float = None,
-                        trade_type: str = 'BUY',
+                        trade_type: str = TradeType.BUY,
                         rows: int = 10) -> str:
     """Make request to binance p2p api.
 

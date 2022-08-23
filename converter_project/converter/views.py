@@ -1,12 +1,11 @@
 from django.http import HttpResponse
 from django.shortcuts import render
 
-from .utils.utils import get_best_price
-
 from .forms import ConverterForm
 from .models import Currency, PaymentMethod, TradeType
 from .utils.binance_api import get_p2p_offers_data
-from .utils.json_parser import get_offers_from_json, parse_payment_methods
+from .utils.json_parser import get_fresh_payment_methods
+from .utils.utils import get_best_offers, get_best_price
 
 
 def index(request) -> HttpResponse:
@@ -30,19 +29,19 @@ def get_payment_methods(request) -> HttpResponse:
     """
     # template = 'converter/index.html'
     form: ConverterForm = ConverterForm(request.GET)
-    currency_payment_method_field_names = {
+    currency_payment_method_field = {
         'from_currency': 'from_payment_methods',
         'to_currency': 'to_payment_methods',
     }
-    for currency_type, payment_method in currency_payment_method_field_names.items():
-
+    for currency_type, payment_method in currency_payment_method_field.items():
         if currency_type in request.GET.keys():
             currency = Currency.objects.get(pk=request.GET.get(currency_type))
             json = get_p2p_offers_data(currency.code)
-            payment_methods = parse_payment_methods(json)
+            payment_methods = get_fresh_payment_methods(json)
             if not payment_methods:
                 return HttpResponse(
-                    f'<option>Payment methods for {currency.code} not exists.</option>')
+                    f'<option>Payment methods for {currency.code}'
+                    f'does not exist.</option>')
             return HttpResponse(form[payment_method])
 
 
@@ -50,11 +49,7 @@ def get_offers(request):
     template = 'converter/index.html'
     form = ConverterForm(
         request.POST or None)
-    context = {
-        'form': form,
-    }
     if form.is_valid():
-        context['POST'] = request.POST
         from_currency = Currency.objects.get(
             pk=request.POST.get('from_currency'))
         to_currency = Currency.objects.get(
@@ -66,91 +61,34 @@ def get_offers(request):
         is_merchant = True if request.POST.get('is_merchant') else False
         if request.POST.get('to_amount'):
             to_amount = float(request.POST.get('to_amount'))
-            to_currency_data = get_p2p_offers_data(
-                to_currency.code,
-                is_merchant,
-                to_payment_method.short_name,
-                to_amount,
-                trade_type=TradeType.SELL,
-                rows=10,
-            )
-            from_currency_data_1 = get_p2p_offers_data(
-                from_currency.code,
-                is_merchant,
-                from_payment_method.short_name,
-                None,
-                trade_type=TradeType.BUY,
-                rows=1,
-            )
-            to_offers = get_offers_from_json(to_currency_data)
-            from_offers_1 = get_offers_from_json(from_currency_data_1)
-            best_to_price = get_best_price(to_offers)
-            usdt_to_sell = to_amount/best_to_price
-            best_from_price_1 = get_best_price(from_offers_1)
-            from_amount = best_from_price_1 * usdt_to_sell
-
-            from_currency_data_2 = get_p2p_offers_data(
-                from_currency.code,
-                is_merchant,
-                from_payment_method.short_name,
-                from_amount,
-                trade_type=TradeType.BUY,
-                rows=10,
-            )
-            from_offers_2 = get_offers_from_json(from_currency_data_2)
-            best_from_price_2 = get_best_price(from_offers_2)
-
-            offers = zip(from_offers_2, to_offers)
-            context['offers'] = offers
-            context['conversion_rate'] = best_from_price_2/best_to_price
-            context['to_amount'] = to_amount
-            context['from_amount'] = from_amount
-            context['to_currency'] = to_currency
-            context['from_currency'] = from_currency
-            return render(request, template, context)
-
+            from_offers, to_offers = get_best_offers(
+                to_currency, from_currency, to_payment_method,
+                from_payment_method, is_merchant, to_amount,
+                filled_amount='to_amount')
+            if from_offers and to_offers:
+                best_from_price = get_best_price(from_offers, TradeType.BUY)
+                best_to_price = get_best_price(to_offers, TradeType.SELL)
+                conversion_rate = best_from_price/best_to_price
+                from_amount = to_amount*conversion_rate
         else:
             from_amount = float(request.POST.get('from_amount'))
-            from_currency_data = get_p2p_offers_data(
-                from_currency.code,
-                is_merchant,
-                from_payment_method.short_name,
-                from_amount,
-                trade_type=TradeType.BUY,
-                rows=10,
-            )
-            to_currency_data_1 = get_p2p_offers_data(
-                to_currency.code,
-                is_merchant,
-                to_payment_method.short_name,
-                None,
-                trade_type=TradeType.SELL,
-                rows=1,
-            )
-            from_offers = get_offers_from_json(from_currency_data)
-            to_offers_1 = get_offers_from_json(to_currency_data_1)
-            best_from_price = get_best_price(from_offers)
-            usdt_to_buy = from_amount/best_from_price
-            best_to_price_1 = get_best_price(to_offers_1)
-            to_amount = best_to_price_1 * usdt_to_buy
+            to_offers, from_offers = get_best_offers(
+                from_currency, to_currency, from_payment_method,
+                to_payment_method, is_merchant, from_amount,
+                filled_amount='from_amount')
+            if from_offers and to_offers:
+                best_from_price = get_best_price(from_offers, TradeType.BUY)
+                best_to_price = get_best_price(to_offers, TradeType.SELL)
+                conversion_rate = best_from_price/best_to_price
+                to_amount = from_amount/conversion_rate
 
-            to_currency_data_2 = get_p2p_offers_data(
-                to_currency.code,
-                is_merchant,
-                to_payment_method.short_name,
-                to_amount,
-                trade_type=TradeType.SELL,
-                rows=10,
-            )
-            to_offers_2 = get_offers_from_json(to_currency_data_2)
-            best_to_price_2 = get_best_price(to_offers_2)
-            offers = zip(from_offers, to_offers_2)
-            context['offers'] = offers
-            context['conversion_rate'] = best_from_price/best_to_price_2
-            context['to_amount'] = to_amount
-            context['from_amount'] = from_amount
-            context['to_currency'] = to_currency
-            context['from_currency'] = from_currency
-            return render(request, template, context)
-    else:
-        return render(request, template, context)
+        context = {
+            'form': form,
+            'offers': zip(from_offers, to_offers),
+            'conversion_rate': best_from_price/best_to_price,
+            'to_amount': to_amount,
+            'from_amount': from_amount,
+            'to_currency': to_currency,
+            'from_currency': from_currency,
+        }
+    return render(request, template, context)
