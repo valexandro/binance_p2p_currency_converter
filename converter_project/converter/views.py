@@ -2,9 +2,9 @@ from django.http import HttpResponse
 from django.shortcuts import render
 
 from .forms import ConverterForm
-from .models import Currency, PaymentMethod, TradeType
+from .models import Currency, PaymentMethod
 from .utils.binance_api import get_p2p_offers_data
-from .utils.json_parser import get_fresh_payment_methods
+from .utils.json_parser import get_payment_methods_from_json
 from .utils.utils import get_best_offers, get_best_price
 
 
@@ -27,7 +27,6 @@ def get_payment_methods(request) -> HttpResponse:
     and assign resulting queryset to choicefield queryset, that will be
     returned as HTML.
     """
-    # template = 'converter/index.html'
     form: ConverterForm = ConverterForm(request.GET)
     currency_payment_method_field = {
         'from_currency': 'from_payment_methods',
@@ -37,18 +36,24 @@ def get_payment_methods(request) -> HttpResponse:
         if currency_type in request.GET.keys():
             currency = Currency.objects.get(pk=request.GET.get(currency_type))
             json = get_p2p_offers_data(currency.code)
-            payment_methods = get_fresh_payment_methods(json)
-            if not payment_methods:
+            try:
+                get_payment_methods_from_json(json)
+            except NameError:
                 return HttpResponse(
                     f'<option>Payment methods for {currency.code}'
-                    f'does not exist.</option>')
+                    f' does not exist.</option>')
             return HttpResponse(form[payment_method])
+    return HttpResponse('<option>Empty request</option>')
 
 
 def get_offers(request):
+    """Handle currency conversion requests."""
     template = 'converter/index.html'
     form = ConverterForm(
         request.POST or None)
+    context = {
+        'form': form,
+    }
     if form.is_valid():
         from_currency = Currency.objects.get(
             pk=request.POST.get('from_currency'))
@@ -66,8 +71,8 @@ def get_offers(request):
                 from_payment_method, is_merchant, to_amount,
                 filled_amount='to_amount')
             if from_offers and to_offers:
-                best_from_price = get_best_price(from_offers, TradeType.BUY)
-                best_to_price = get_best_price(to_offers, TradeType.SELL)
+                best_from_price = get_best_price(from_offers)
+                best_to_price = get_best_price(to_offers)
                 conversion_rate = best_from_price/best_to_price
                 from_amount = to_amount*conversion_rate
         else:
@@ -77,8 +82,8 @@ def get_offers(request):
                 to_payment_method, is_merchant, from_amount,
                 filled_amount='from_amount')
             if from_offers and to_offers:
-                best_from_price = get_best_price(from_offers, TradeType.BUY)
-                best_to_price = get_best_price(to_offers, TradeType.SELL)
+                best_from_price = get_best_price(from_offers)
+                best_to_price = get_best_price(to_offers)
                 conversion_rate = best_from_price/best_to_price
                 to_amount = from_amount/conversion_rate
 

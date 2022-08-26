@@ -1,17 +1,29 @@
+"""Package for processing offers from JSON."""
 import json
 from typing import List
+
+from django.db.models.query import QuerySet
 
 from ..models import Currency, Offer, PaymentMethod, Seller, TradeType
 
 
-def get_fresh_payment_methods(response_text: str):
-    json_array = json.load(open(response_text))
-    # json_array = json.loads(response_text)
+def get_payment_methods_from_json(
+        response_text: str) -> QuerySet[PaymentMethod]:
+    """Parse json and create missing payment methods."""
+    json_array = json.loads(response_text)
+
+    if not json_array['success']:
+        raise ValueError(json_array['message'])
+
     raw_offers = json_array['data']
+
+    if not raw_offers:
+        raise NameError('Empty response.')
 
     for raw_offer in raw_offers:
         trade_methods = raw_offer['adv']['tradeMethods']
-        currency = Currency.objects.get(code=raw_offer['adv']['fiatUnit'])
+        currency: Currency = Currency.objects.get(
+            code=raw_offer['adv']['fiatUnit'])
         for trade_method in trade_methods:
             PaymentMethod.objects.update_or_create(
                 short_name=trade_method['identifier'],
@@ -23,9 +35,17 @@ def get_fresh_payment_methods(response_text: str):
 
 
 def get_offers_from_json(response_text: str, offer_type) -> List[Offer]:
-    json_array = json.load(open(response_text))
-    # json_array = json.loads(response_text)
+    """Parse json and create offers list."""
+    json_array = json.loads(response_text)
+
+    if not json_array['success']:
+        raise ValueError(json_array['message'])
+
     raw_offers = json_array['data']
+
+    if not raw_offers:
+        raise NameError('Empty response.')
+
     if offer_type == TradeType.BUY:
         raw_offers.sort(key=lambda x: x['adv']['price'])
     else:

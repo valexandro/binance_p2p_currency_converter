@@ -76,7 +76,7 @@ class ConverterForm(DynamicFormMixin, forms.Form):
         }
     )
     from_amount = forms.FloatField(required=False)
-    to_amount = forms.FloatField(required=False)
+    to_amount = forms.FloatField()
 
     is_merchant = forms.BooleanField(required=False, initial=True)
     # TODO Handle same currency selected ib both dropbowns. Should throw error
