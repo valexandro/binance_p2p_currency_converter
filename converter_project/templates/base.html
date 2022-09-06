@@ -13,9 +13,12 @@
           crossorigin="anonymous">
   </head>
   <body>
-    {% block content %}
-    {% endblock content %}
-    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js" integrity="sha384-DfXdz2htPH0lsSSs5nCTpuj/zy4C+OGpamoFVy38MVBnE+IbbVYUew+OrCXaRkfj" crossorigin="anonymous"></script>
+    <div class="container mt-2">
+      {% include 'converter/includes/messages.html' %}
+      {% block content %}
+      {% endblock content %}
+    </div>
+    <script src="https://code.jquery.com/jquery-3.6.1.min.js" integrity="sha256-o88AwQnZB+VDvE9tvIXrMQaPlFFSUTR+nldQm1LuPXQ=" crossorigin="anonymous"></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.0/dist/js/bootstrap.bundle.min.js" integrity="sha384-A3rJD856KowSb7dwlZdYEkO39Gagi7vIsF0jrRAoQmDKKtQBHUuLZ9AsSv4jD4Xa" crossorigin="anonymous"></script>
     <script src="https://unpkg.com/htmx.org@1.6.0"></script>
     <script>
@@ -26,6 +29,13 @@
          $("#id_to_amount").keydown(function(){
              $("#id_from_amount").val("");
          })
+      });
+    </script>
+    <script>
+      $(document).ready(function() {
+          setTimeout(function() {
+              $('.alert').fadeOut("slow");
+          }, 10000);
       });
     </script>
   </body>

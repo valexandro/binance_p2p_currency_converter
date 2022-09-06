@@ -1,42 +1,40 @@
 {% extends "base.html" %}
 {% load widget_tweaks %}
 {% block content %}
-  <div class="container">
-    <h1 class="text-center">Binance p2p currency converter</h1>
-    <form action="{% url 'converter:get_offers' %}" method="post">
-      {% csrf_token %}
-      {% include 'converter/includes/currency_select_line.html' with currency=form.from_currency payment_methods=form.from_payment_methods amount=form.from_amount hx_target='#id_from_payment_methods' line_name='From' %}
-      {% include 'converter/includes/currency_select_line.html' with currency=form.to_currency payment_methods=form.to_payment_methods amount=form.to_amount hx_target='#id_to_payment_methods' line_name='To' %}
-      <div class="col-md-12 text-end">
-        {% render_field form.is_merchant.label_tag %}
-        {% render_field form.is_merchant %}
-        <button type="submit" class="btn btn-primary btn-lg">Convert</button>
-      </div>
-    </form>
-    <hr>
-    <p>
-      Best conversion rate: {{ conversion_rate|floatformat:3 }}.
-      Can convert {{ from_amount|floatformat:3 }} {{ from_currency }} to {{ to_amount|floatformat:3 }} {{ to_currency }}
-    </p>
-    <hr>
-    <div class="row">
-      <div class="col-md-1 d-none d-md-flex">Offer number</div>
-      <div class="col-md-9">
-        <div class="row">
-          <div class="col">Currency</div>
-          <div class="col col-md-3">Seller</div>
-          <div class="col">Finish rate</div>
-          <div class="col d-none d-md-flex">Orders count</div>
-          <div class="col d-none d-md-flex">Min. amount</div>
-          <div class="col d-none d-md-flex">Trade type</div>
-          <div class="col">Price</div>
-        </div>
-      </div>
-      TODO Разобраться с несоответствием колонок вывода и заголовков
-      <div class="col d-none d-md-flex">Conversion rate</div>
+  <h1 class="text-center">Binance p2p currency converter</h1>
+  <form action="{% url 'converter:get_offers' %}" method="post">
+    {% csrf_token %}
+    {% include 'converter/includes/currency_select_line.html' with currency=form.from_currency payment_methods=form.from_payment_methods amount=form.from_amount hx_target='#id_from_payment_methods' line_name='From' %}
+    {% include 'converter/includes/currency_select_line.html' with currency=form.to_currency payment_methods=form.to_payment_methods amount=form.to_amount hx_target='#id_to_payment_methods' line_name='To' %}
+    <div class="col-md-12 text-end">
+      {% render_field form.is_merchant.label_tag %}
+      {% render_field form.is_merchant %}
+      <button type="submit" class="btn btn-primary btn-lg">Convert</button>
     </div>
-    {% for from_offer, to_offer in offers %}
-      {% include 'converter/includes/offer_card.html' %}
-    {% endfor %}
+  </form>
+  <hr>
+  <p>
+    Best conversion rate: {{ conversion_rate|floatformat:3 }}.
+    Can convert {{ from_amount|floatformat:3 }} {{ from_currency }} to {{ to_amount|floatformat:3 }} {{ to_currency }}
+  </p>
+  <hr>
+  <div class="row">
+    <div class="col-md-1 d-none d-md-flex">Offer number</div>
+    <div class="col-md-9">
+      <div class="row">
+        <div class="col">Currency</div>
+        <div class="col col-md-3">Seller</div>
+        <div class="col">Finish rate</div>
+        <div class="col d-none d-md-flex">Orders count</div>
+        <div class="col d-none d-md-flex">Min. amount</div>
+        <div class="col d-none d-md-flex">Trade type</div>
+        <div class="col">Price</div>
+      </div>
+    </div>
+    TODO Разобраться с несоответствием колонок вывода и заголовков
+    <div class="col d-none d-md-flex">Conversion rate</div>
   </div>
+  {% for from_offer, to_offer in offers %}
+    {% include 'converter/includes/offer_card.html' %}
+  {% endfor %}
 {% endblock content %}

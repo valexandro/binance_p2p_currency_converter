@@ -1,5 +1,6 @@
 from django.test import TestCase
 
+from ..exceptions import BinanceApiError, OffersNotFoundError
 from ..models import Currency, Offer, PaymentMethod, Seller, TradeType
 from ..utils.json_parser import (get_offers_from_json,
                                  get_payment_methods_from_json)
@@ -18,7 +19,7 @@ class JsonParserTests(TestCase):
             " cryptocurrency on our official partner's platform"
             ' https://www.pexpay.com/en'
         )
-        cls.empty_error_message = 'Empty response.'
+        cls.empty_error_message = 'Offers not found.'
 
         cls.currency_rub = Currency.objects.create(
             code='RUB',
@@ -114,24 +115,24 @@ class JsonParserTests(TestCase):
         self.assertEqual(offers_buy[0].price, float(self.lowest_order_price))
 
     def test_failed_response(self):
-        """Raise ValueError if request failed."""
-        with self.assertRaises(ValueError,
+        """Raise BinanceApiError if request failed."""
+        with self.assertRaises(BinanceApiError,
                                msg=self.failed_error_message) as exc:
             get_payment_methods_from_json(self.fail_response)
         self.assertEqual(str(exc.exception), self.failed_error_message)
 
-        with self.assertRaises(ValueError,
+        with self.assertRaises(BinanceApiError,
                                msg=self.failed_error_message) as exc:
             get_offers_from_json(self.fail_response, TradeType.SELL)
         self.assertEqual(str(exc.exception), self.failed_error_message)
 
     def test_empty_response(self):
-        """Raise NameError if response is empty."""
-        with self.assertRaises(NameError,
+        """Raise OffersNotFoundError if response is empty."""
+        with self.assertRaises(OffersNotFoundError,
                                msg=self.failed_error_message) as exc:
             get_payment_methods_from_json(self.empty_response)
         self.assertEqual(str(exc.exception), self.empty_error_message)
-        with self.assertRaises(NameError,
+        with self.assertRaises(OffersNotFoundError,
                                msg=self.failed_error_message) as exc:
             get_offers_from_json(self.empty_response, TradeType.SELL)
         self.assertEqual(str(exc.exception), self.empty_error_message)

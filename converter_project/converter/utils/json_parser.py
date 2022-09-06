@@ -5,7 +5,7 @@ from typing import List
 
 from django.db.models.query import QuerySet
 
-from ..exceptions import BinanceApiError, PaymentMethodsNotFoundError
+from ..exceptions import BinanceApiError, OffersNotFoundError
 from ..models import Currency, Offer, PaymentMethod, Seller, TradeType
 
 logger = logging.getLogger(__name__)
@@ -23,7 +23,7 @@ def get_payment_methods_from_json(
     raw_offers = json_array['data']
 
     if not raw_offers:
-        raise PaymentMethodsNotFoundError('Payment methods not found.')
+        raise OffersNotFoundError('Offers not found.')
 
     counter = 0
     for raw_offer in raw_offers:
@@ -51,12 +51,14 @@ def get_offers_from_json(response_text: str, offer_type) -> List[Offer]:
     json_array = json.loads(response_text)
 
     if not json_array['success']:
+        logger.error('request unsuccessful')
         raise BinanceApiError(json_array['message'])
 
     raw_offers = json_array['data']
 
     if not raw_offers:
-        raise PaymentMethodsNotFoundError('Payment methods not found.')
+        logger.error('request empty')
+        raise OffersNotFoundError('Offers not found.')
 
     if offer_type == TradeType.BUY:
         logger.debug('sorting payment methods ascending')

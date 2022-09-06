@@ -32,15 +32,18 @@ def offers_request(currency, payment_method, is_merchant, trade_type,
         else
         f'making full request with {rows_for_full_request} rows'
     )
-    return get_offers_from_json(get_p2p_offers_data(
-        currency.code,
-        is_merchant,
-        payment_method.short_name,
-        amount,
-        trade_type=trade_type,
-        rows=rows_for_price_request if amount is None
-        else rows_for_full_request,
-    ), offer_type=trade_type)
+    try:
+        return get_offers_from_json(get_p2p_offers_data(
+            currency.code,
+            is_merchant,
+            payment_method.short_name,
+            amount,
+            trade_type=trade_type,
+            rows=rows_for_price_request if amount is None
+            else rows_for_full_request,
+        ), offer_type=trade_type)
+    except Exception as e:
+        raise Exception(e) from e
 
 
 def get_best_offers(currency_1, currency_2, payment_method_1, payment_method_2,
@@ -60,26 +63,29 @@ def get_best_offers(currency_1, currency_2, payment_method_1, payment_method_2,
     logger.debug(
         f'requesting best offers for ({amount_1})'
         f'{currency_1.code}[{payment_method_1.display_name}]')
-    offers_1 = offers_request(
-        currency_1, payment_method_1, is_merchant,
-        TradeType.SELL if filled_amount == 'to_amount' else TradeType.BUY,
-        amount_1)
-    logger.debug(
-        f'requesting approx price for {currency_2.code}'
-        f'[{payment_method_2.display_name}]')
-    offers_2_pass_1 = offers_request(
-        currency_2, payment_method_2, is_merchant,
-        TradeType.BUY if filled_amount == 'to_amount' else TradeType.SELL)
-    price_1 = get_best_price(offers_1)
+    try:
+        offers_1 = offers_request(
+            currency_1, payment_method_1, is_merchant,
+            TradeType.SELL if filled_amount == 'to_amount' else TradeType.BUY,
+            amount_1)
+        logger.debug(
+            f'requesting approx price for {currency_2.code}'
+            f'[{payment_method_2.display_name}]')
+        offers_2_pass_1 = offers_request(
+            currency_2, payment_method_2, is_merchant,
+            TradeType.BUY if filled_amount == 'to_amount' else TradeType.SELL)
+        price_1 = get_best_price(offers_1)
 
-    usdt_to_sell = amount_1/price_1
-    price_2_pass_1 = get_best_price(offers_2_pass_1)
-    amount_2 = price_2_pass_1 * usdt_to_sell
-    logger.debug(
-        f'requesting best offers for ({amount_2})'
-        f'{currency_2.code}[{payment_method_2.display_name}]')
-    offers_2_pass_2 = offers_request(
-        currency_2, payment_method_2, is_merchant,
-        TradeType.BUY if filled_amount == 'to_amount' else TradeType.SELL,
-        amount_2)
+        usdt_to_sell = amount_1/price_1
+        price_2_pass_1 = get_best_price(offers_2_pass_1)
+        amount_2 = price_2_pass_1 * usdt_to_sell
+        logger.debug(
+            f'requesting best offers for ({amount_2})'
+            f'{currency_2.code}[{payment_method_2.display_name}]')
+        offers_2_pass_2 = offers_request(
+            currency_2, payment_method_2, is_merchant,
+            TradeType.BUY if filled_amount == 'to_amount' else TradeType.SELL,
+            amount_2)
+    except Exception as e:
+        raise Exception(e) from e
     return offers_2_pass_2, offers_1

@@ -9,7 +9,7 @@ from .models import Currency, PaymentMethod
 
 logger = logging.getLogger(__name__)
 
-# TODO fix required fields. Make both optional, and check on post for one of them to be filled.
+
 class ConverterForm(DynamicFormMixin, forms.Form):
     """Currency converter form."""
 
@@ -84,11 +84,9 @@ class ConverterForm(DynamicFormMixin, forms.Form):
         }
     )
     from_amount = forms.FloatField(required=False)
-    to_amount = forms.FloatField()
+    to_amount = forms.FloatField(required=False)
 
     is_merchant = forms.BooleanField(required=False, initial=True)
-    # TODO Handle same currency selected ib both dropbowns. Should throw error
-    # TODO install debug toolbar
     # Either of them can be filled.
     # if only sell_amount filled -
     # 1. get offers for sell currency with selected amount and payment method,

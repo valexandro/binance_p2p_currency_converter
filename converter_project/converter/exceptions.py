@@ -1,4 +1,4 @@
-class PaymentMethodsNotFoundError(Exception):
+class OffersNotFoundError(Exception):
     pass
 
 
