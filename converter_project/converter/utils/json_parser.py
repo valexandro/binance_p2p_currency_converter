@@ -1,54 +1,68 @@
 """Package for processing offers from JSON."""
 import json
+import logging
 from typing import List
 
 from django.db.models.query import QuerySet
 
+from ..exceptions import BinanceApiError, PaymentMethodsNotFoundError
 from ..models import Currency, Offer, PaymentMethod, Seller, TradeType
+
+logger = logging.getLogger(__name__)
 
 
 def get_payment_methods_from_json(
         response_text: str) -> QuerySet[PaymentMethod]:
     """Parse json and create missing payment methods."""
+    logger.debug('parsing payment methods from JSON')
     json_array = json.loads(response_text)
 
     if not json_array['success']:
-        raise ValueError(json_array['message'])
+        raise BinanceApiError(json_array['message'])
 
     raw_offers = json_array['data']
 
     if not raw_offers:
-        raise NameError('Empty response.')
+        raise PaymentMethodsNotFoundError('Payment methods not found.')
 
+    counter = 0
     for raw_offer in raw_offers:
         trade_methods = raw_offer['adv']['tradeMethods']
         currency: Currency = Currency.objects.get(
             code=raw_offer['adv']['fiatUnit'])
         for trade_method in trade_methods:
+            short_name = trade_method['identifier']
+            display_name = trade_method['tradeMethodName']
             PaymentMethod.objects.update_or_create(
-                short_name=trade_method['identifier'],
-                display_name=trade_method['tradeMethodName'],
-                currency=currency
+                short_name=short_name,
+                display_name=display_name,
+                currency=currency,
             )
+            logger.debug(f'parsed [{display_name}] payment method')
+            counter += 1
+    logger.debug(f'parsed {counter} payment methods')
     return PaymentMethod.objects.filter(
         currency=currency)
 
 
 def get_offers_from_json(response_text: str, offer_type) -> List[Offer]:
     """Parse json and create offers list."""
+    logger.debug('parsing offers from JSON')
     json_array = json.loads(response_text)
 
     if not json_array['success']:
-        raise ValueError(json_array['message'])
+        raise BinanceApiError(json_array['message'])
 
     raw_offers = json_array['data']
 
     if not raw_offers:
-        raise NameError('Empty response.')
+        raise PaymentMethodsNotFoundError('Payment methods not found.')
 
     if offer_type == TradeType.BUY:
+        logger.debug('sorting payment methods ascending')
         raw_offers.sort(key=lambda x: x['adv']['price'])
     else:
+        logger.debug('sorting payment methods descending')
         raw_offers.sort(key=lambda x: x['adv']['price'], reverse=True)
     offers: List[Offer] = []
     for raw_offer in raw_offers:
@@ -63,6 +77,7 @@ def get_offers_from_json(response_text: str, offer_type) -> List[Offer]:
                 raw_offer['advertiser']['monthOrderCount']),
             user_id=raw_offer['advertiser']['userNo']
         )
+        logger.debug(f'parsed seller [{seller}]')
         offer = Offer(
             currency=Currency.objects.get(
                 code=raw_offer['adv']['fiatUnit']),
@@ -75,5 +90,7 @@ def get_offers_from_json(response_text: str, offer_type) -> List[Offer]:
             tradable_funds=float(raw_offer['adv']['surplusAmount']),
             offer_id=raw_offer['adv']['advNo'],
         )
+        logger.debug(f'parsed offer [{offer}]')
         offers.append(offer)
+    logger.debug(f'parsed {len(offers)} offers')
     return offers

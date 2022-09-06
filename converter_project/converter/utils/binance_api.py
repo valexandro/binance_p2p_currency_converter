@@ -1,7 +1,12 @@
 """Methods to work with Binance api."""
+
+import logging
+
 import requests
 
 from ..models import TradeType
+
+logger = logging.getLogger(__name__)
 
 
 def get_p2p_offers_data(fiat_code: str,
@@ -22,6 +27,10 @@ def get_p2p_offers_data(fiat_code: str,
     Returns:
         response text (str): JSON response text
     """
+    logger.debug(
+        f'making request for ({trans_amount}){fiat_code}'
+        f'[{payment_method}], trade type {trade_type}'
+        f' merchant = {is_merchant}')
     data = {
         'page': 1,
         'rows': rows,

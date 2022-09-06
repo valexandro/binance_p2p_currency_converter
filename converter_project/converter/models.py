@@ -66,6 +66,9 @@ class Seller():
     month_orders_count: int
     user_id: str
 
+    def __str__(self) -> str:
+        return self.name
+
 
 class TradeType():
     """Buy means buy USDT from seller."""
@@ -85,3 +88,6 @@ class Offer():
     min_amount: int
     tradable_funds: float
     offer_id: str
+
+    def __str__(self) -> str:
+        return f'{self.trade_type} {self.currency.code} {self.price}'

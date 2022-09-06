@@ -1,11 +1,15 @@
 """Currency converter forms."""
+import logging
+
 from django import forms
 from django.db.models.query import QuerySet
 from dynamic_forms import DynamicField, DynamicFormMixin
 
 from .models import Currency, PaymentMethod
 
+logger = logging.getLogger(__name__)
 
+# TODO fix required fields. Make both optional, and check on post for one of them to be filled.
 class ConverterForm(DynamicFormMixin, forms.Form):
     """Currency converter form."""
 
@@ -21,6 +25,8 @@ class ConverterForm(DynamicFormMixin, forms.Form):
         as queryset source.
         """
         from_currency = form['from_currency'].value()
+        logger.debug(
+            'requested "FROM" payment methods in form')
         return PaymentMethod.objects.filter(currency=from_currency)
 
     def get_to_payment_methods(form: 'ConverterForm'
@@ -31,6 +37,8 @@ class ConverterForm(DynamicFormMixin, forms.Form):
         as queryset source.
         """
         to_currency = form['to_currency'].value()
+        logger.debug(
+            'requested "TO" payment methods in form')
         return PaymentMethod.objects.filter(currency=to_currency)
 
     def initial_from_payment_method(form: 'ConverterForm'
