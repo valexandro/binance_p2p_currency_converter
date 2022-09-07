@@ -21,7 +21,7 @@ class ConverterViewsTest(TestCase):
             code='TRY',
             name='Turkish Lira',
         )
-        cls.empty_request_response = '<option>Empty request</option>'
+        cls.empty_request_response = '<option value="">---------</option>'
         cls.payment_method_not_found = (
             f'<option>Payment methods for {cls.currency_rub.code}'
             f' does not exist.</option>'
@@ -123,8 +123,7 @@ class ConverterViewsTest(TestCase):
         with patch(
                 'converter.views.get_p2p_offers_data') as get_p2p_offers_data:
             get_p2p_offers_data.return_value = self.successful_empty_response
-            response = self.guest_client.get(
-                f'/payment_methods/')
+            response = self.guest_client.get('/payment_methods/')
             self.assertEqual(
                 response.content.decode('utf-8'),
                 self.empty_request_response)

@@ -9,7 +9,7 @@ from .forms import ConverterForm
 from .models import Currency, PaymentMethod
 from .utils.binance_api import get_p2p_offers_data
 from .utils.json_parser import get_payment_methods_from_json
-from .utils.utils import get_best_offers, get_best_price
+from .utils.utils import get_best_offers_pair, get_best_price
 
 logger = logging.getLogger(__name__)
 
@@ -86,47 +86,45 @@ def get_offers(request):
         to_payment_method = PaymentMethod.objects.get(
             pk=request.POST.get('to_payment_methods'))
         is_merchant = True if request.POST.get('is_merchant') else False
-        if request.POST.get('to_amount'):
-            to_amount = float(request.POST.get('to_amount'))
-            logger.info(
-                f'requested conversion '
-                f'{from_currency.code}[{from_payment_method.display_name}] -> '
-                f'({to_amount}){to_currency.code}'
-                f'[{to_payment_method.display_name}]')
-            try:
-                from_offers, to_offers = get_best_offers(
+        to_amount_filled = True if request.POST.get('to_amount') else False
+        try:
+            if to_amount_filled:
+                to_amount = float(request.POST.get('to_amount'))
+                logger.info(
+                    f'requested conversion '
+                    f'{from_currency.code}[{from_payment_method.display_name}] -> '
+                    f'({to_amount}){to_currency.code}'
+                    f'[{to_payment_method.display_name}]')
+
+                from_offers, to_offers = get_best_offers_pair(
                     to_currency, from_currency, to_payment_method,
                     from_payment_method, is_merchant, to_amount,
-                    filled_amount='to_amount')
-            except Exception as e:
-                messages.error(request, str(e))
-                return render(request, template, context)
+                    to_amount_filled)
 
-            best_from_price = get_best_price(from_offers)
-            best_to_price = get_best_price(to_offers)
-            conversion_rate = best_from_price/best_to_price
-            from_amount = to_amount*conversion_rate
-        else:
-            from_amount = float(request.POST.get('from_amount'))
-            logger.info(
-                f'requested conversion '
-                f'({from_amount}){from_currency.code}'
-                f'[{from_payment_method.display_name}] -> '
-                f'{to_currency.code}[{to_payment_method.display_name}]')
-            try:
-                to_offers, from_offers = get_best_offers(
+                best_from_price = get_best_price(from_offers)
+                best_to_price = get_best_price(to_offers)
+                conversion_rate = best_from_price/best_to_price
+                from_amount = to_amount*conversion_rate
+            else:
+                from_amount = float(request.POST.get('from_amount'))
+                logger.info(
+                    f'requested conversion '
+                    f'({from_amount}){from_currency.code}'
+                    f'[{from_payment_method.display_name}] -> '
+                    f'{to_currency.code}[{to_payment_method.display_name}]')
+
+                to_offers, from_offers = get_best_offers_pair(
                     from_currency, to_currency, from_payment_method,
                     to_payment_method, is_merchant, from_amount,
-                    filled_amount='from_amount')
-            except Exception as e:
-                messages.error(request, str(e))
-                return render(request, template, context)
+                    to_amount_filled)
 
-            best_from_price = get_best_price(from_offers)
-            best_to_price = get_best_price(to_offers)
-            conversion_rate = best_from_price/best_to_price
-            to_amount = from_amount/conversion_rate
-
+                best_from_price = get_best_price(from_offers)
+                best_to_price = get_best_price(to_offers)
+                conversion_rate = best_from_price/best_to_price
+                to_amount = from_amount/conversion_rate
+        except Exception as e:
+            messages.error(request, str(e))
+            return render(request, template, context)
         context = {
             'form': form,
             'offers': zip(from_offers, to_offers),

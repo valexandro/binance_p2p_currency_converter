@@ -170,3 +170,6 @@ class UtilsTest(TestCase):
         """Price of top order returned successfully."""
         best_price = get_best_price(self.test_offers)
         self.assertEqual(best_price, self.test_offers[0].price)
+
+    def test_offers_request(self):
+        pass
