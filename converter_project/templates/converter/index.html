@@ -12,28 +12,34 @@
       <button type="submit" class="btn btn-primary btn-lg">Convert</button>
     </div>
   </form>
-  <hr>
-  <p>
-    Best conversion rate: {{ conversion_rate|floatformat:3 }}.
-    Can convert {{ from_amount|floatformat:3 }} {{ from_currency }} to {{ to_amount|floatformat:3 }} {{ to_currency }}
-  </p>
-  <hr>
-  <div class="row">
-    <div class="col-md-1 d-none d-md-flex">Offer number</div>
-    <div class="col-md-9">
-      <div class="row">
-        <div class="col">Currency</div>
-        <div class="col col-md-3">Seller</div>
-        <div class="col">Finish rate</div>
-        <div class="col d-none d-md-flex">Orders count</div>
-        <div class="col d-none d-md-flex">Min. amount</div>
-        <div class="col d-none d-md-flex">Trade type</div>
-        <div class="col">Price</div>
-      </div>
-    </div>
-    <div class="col-md-2 d-none d-md-flex">Conversion rate</div>
-  </div>
+  {% if offers %}
+    <p class="text-center m-0">
+      Best conversion rate: <em class="fw-bold fst-normal">{{ conversion_rate|floatformat:3 }}</em> {{ from_currency }}/{{ to_currency }}.
+    </p>
+    <p class="text-center">
+      Can convert {{ from_amount|floatformat:3 }} {{ from_currency }} to {{ to_amount|floatformat:3 }} {{ to_currency }}
+    </p>
+  {% endif %}
   {% for from_offer, to_offer in offers %}
-    {% include 'converter/includes/offer_card.html' %}
+    {% if forloop.first %}
+      <div class="row align-items-center justify-content-center">
+        <div class="col col-md-2">
+          <h6>Best BUY offers</h6>
+        </div>
+        <div class="col col-md-2">
+          <h6>Best SELL offers</h6>
+        </div>
+        <hr class="m-0">
+      </div>
+    {% endif %}
+    <div class="row align-items-center justify-content-center {% if forloop.first %}fw-bold{% endif %} ">
+      <div class="col col-md-2">
+        {% include 'converter/includes/offer.html' with offer=from_offer is_from_offers=True %}
+      </div>
+      <div class="col col-md-2">
+        {% include 'converter/includes/offer.html' with offer=to_offer is_from_offers=False %}
+      </div>
+      {% if forloop.first %}<hr>{% endif %}
+    </div>
   {% endfor %}
 {% endblock content %}

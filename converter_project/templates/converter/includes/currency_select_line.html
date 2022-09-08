@@ -2,20 +2,22 @@
 {% url 'converter:payment_methods' as payment_methods_url %}
 {% url 'converter:get_usdt_price' as get_usdt_price_url %}
 <div class="row d-none d-md-flex">
-  <div class="col-md-1 mb-2"></div>
-  <div class="col-md-3 mb-2">Amount</div>
-  <div class="col-md-3 mb-2">Currency</div>
-  <div class="col-md-5 mb-2">Payment method</div>
+  {% if line_name == "From" %}
+    <div class="col-md-1 mb-2"></div>
+    <div class="col-md-3 mb-2">Currency</div>
+    <div class="col-md-5 mb-2">Payment method</div>
+    <div class="col-md-3 mb-2">Amount</div>
+  {% endif %}
 </div>
 <div class="row align-items-center">
   <div class="col-md-1 mb-2">{{ line_name }}</div>
-  <div class="col-md-3 mb-2">
-    {% render_field amount class="form-control" %}
-  </div>
   <div class="col-md-3 mb-2">
     {% render_field currency class="form-select" hx-get=payment_methods_url hx-target=hx_target %}
   </div>
   <div class="col-md-5 mb-2">
     {% render_field payment_methods class="form-select" %}
+  </div>
+  <div class="col-md-3 mb-2">
+    {% render_field amount class="form-control" %}
   </div>
 </div>
