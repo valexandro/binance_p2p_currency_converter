@@ -2,7 +2,7 @@ import logging
 
 from django.contrib import messages
 from django.http import HttpResponse
-from django.shortcuts import render
+from django.shortcuts import get_object_or_404, render
 
 from .exceptions import BinanceApiError, OffersNotFoundError
 from .forms import ConverterForm
@@ -27,7 +27,7 @@ def index(request) -> HttpResponse:
 def get_payment_methods(request) -> HttpResponse:
     """Return payment method options for requested currency as HTML select options.
 
-    Implemented by DynamicField in ConverterForm.
+    Implemented by DynamicField in ConverterForm + HTMX.
     Call to forms '*payment_methods' field for requested currency,
     will trigger forms method to fetch payment methods for this currency,
     and assign resulting queryset to choicefield queryset, that will be
@@ -42,7 +42,8 @@ def get_payment_methods(request) -> HttpResponse:
         '<option>Payment methods for {0} does not exist.</option>')
     for currency_type, payment_method in currency_payment_method_field.items():
         if currency_type in request.GET.keys():
-            currency = Currency.objects.get(pk=request.GET.get(currency_type))
+            currency = get_object_or_404(
+                Currency, pk=request.GET.get(currency_type))
             logger.info(f'requested payment methods for {currency.code}')
             json = get_p2p_offers_data(
                 fiat_code=currency.code, is_merchant=True, rows=10)
@@ -77,13 +78,17 @@ def get_offers(request):
         return render(request, template, context)
 
     if form.is_valid():
-        from_currency = Currency.objects.get(
+        from_currency = get_object_or_404(
+            Currency,
             pk=request.POST.get('from_currency'))
-        to_currency = Currency.objects.get(
+        to_currency = get_object_or_404(
+            Currency,
             pk=request.POST.get('to_currency'))
-        from_payment_method = PaymentMethod.objects.get(
+        from_payment_method = get_object_or_404(
+            PaymentMethod,
             pk=request.POST.get('from_payment_methods'))
-        to_payment_method = PaymentMethod.objects.get(
+        to_payment_method = get_object_or_404(
+            PaymentMethod,
             pk=request.POST.get('to_payment_methods'))
         is_merchant = True if request.POST.get('is_merchant') else False
         to_amount_filled = True if request.POST.get('to_amount') else False
@@ -92,7 +97,8 @@ def get_offers(request):
                 to_amount = float(request.POST.get('to_amount'))
                 logger.info(
                     f'requested conversion '
-                    f'{from_currency.code}[{from_payment_method.display_name}] -> '
+                    f'{from_currency.code}'
+                    f'[{from_payment_method.display_name}] -> '
                     f'({to_amount}){to_currency.code}'
                     f'[{to_payment_method.display_name}]')
 
@@ -125,10 +131,11 @@ def get_offers(request):
         except Exception as e:
             messages.error(request, str(e))
             return render(request, template, context)
+
         context = {
             'form': form,
             'offers': zip(from_offers, to_offers),
-            'conversion_rate': best_from_price/best_to_price,
+            'conversion_rate': conversion_rate,
             'to_amount': to_amount,
             'from_amount': from_amount,
             'to_currency': to_currency,

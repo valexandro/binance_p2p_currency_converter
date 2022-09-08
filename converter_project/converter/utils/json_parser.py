@@ -4,6 +4,7 @@ import logging
 from typing import List
 
 from django.db.models.query import QuerySet
+from django.shortcuts import get_object_or_404
 
 from ..exceptions import BinanceApiError, OffersNotFoundError
 from ..models import Currency, Offer, PaymentMethod, Seller, TradeType
@@ -16,7 +17,7 @@ def get_payment_methods_from_json(
     """Parse json and create missing payment methods."""
     logger.debug('parsing payment methods from JSON')
     json_array = json.loads(response_text)
-
+    # json_array = json.load(open(response_text))
     if not json_array['success']:
         raise BinanceApiError(json_array['message'])
 
@@ -28,7 +29,8 @@ def get_payment_methods_from_json(
     counter = 0
     for raw_offer in raw_offers:
         trade_methods = raw_offer['adv']['tradeMethods']
-        currency: Currency = Currency.objects.get(
+        currency: Currency = get_object_or_404(
+            Currency,
             code=raw_offer['adv']['fiatUnit'])
         for trade_method in trade_methods:
             short_name = trade_method['identifier']
@@ -49,7 +51,7 @@ def get_offers_from_json(response_text: str, offer_type) -> List[Offer]:
     """Parse json and create offers list."""
     logger.debug('parsing offers from JSON')
     json_array = json.loads(response_text)
-
+    # json_array = json.load(open(response_text))
     if not json_array['success']:
         logger.error('request unsuccessful')
         raise BinanceApiError(json_array['message'])
@@ -81,7 +83,8 @@ def get_offers_from_json(response_text: str, offer_type) -> List[Offer]:
         )
         logger.debug(f'parsed seller [{seller}]')
         offer = Offer(
-            currency=Currency.objects.get(
+            currency=get_object_or_404(
+                Currency,
                 code=raw_offer['adv']['fiatUnit']),
             seller=seller,
             trade_type=(

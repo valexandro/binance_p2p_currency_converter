@@ -7,6 +7,10 @@ import requests
 from ..models import TradeType
 
 logger = logging.getLogger(__name__)
+# PATHS = {
+#     'RUB': '/home/shark1501/dev/p2p_converter/converter_project/test_data/SELL_10_records_RUB_mixed.json',
+#     'TRY': '/home/shark1501/dev/p2p_converter/converter_project/test_data/BUY_10_records_TRY_mixed.json',
+# }
 
 
 def get_p2p_offers_data(fiat_code: str,
@@ -64,3 +68,4 @@ def get_p2p_offers_data(fiat_code: str,
         headers=headers,
         json=data)
     return response.text
+    # return PATHS[fiat_code]
