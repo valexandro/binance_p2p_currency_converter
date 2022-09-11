@@ -1,0 +1,40 @@
+{% load widget_tweaks %}
+<form action="{% url 'converter:get_offers' %}" method="post">
+  {% csrf_token %}
+  {% url 'converter:payment_methods' as payment_methods_url %}
+  <div class="row d-none d-md-flex">
+    <div class="col-md-1 mb-2"></div>
+    <div class="col-md-3 mb-2">Currency</div>
+    <div class="col-md-5 mb-2">Payment method</div>
+    <div class="col-md-3 mb-2">Amount</div>
+  </div>
+  <div class="row align-items-center">
+    <div class="col-md-1 mb-2">FROM</div>
+    <div class="col-md-3 mb-2">
+      {% render_field form.from_currency class="form-select" hx-get=payment_methods_url hx-target='#id_from_payment_methods' %}
+    </div>
+    <div class="col-md-5 mb-2">
+      {% render_field form.from_payment_methods class="form-select" %}
+    </div>
+    <div class="col-md-3 mb-2">
+      {% render_field form.from_amount class="form-control" %}
+    </div>
+  </div>
+  <div class="row align-items-center">
+    <div class="col-md-1 mb-2">TO</div>
+    <div class="col-md-3 mb-2">
+      {% render_field form.to_currency class="form-select" hx-get=payment_methods_url hx-target='#id_to_payment_methods' %}
+    </div>
+    <div class="col-md-5 mb-2">
+      {% render_field form.to_payment_methods class="form-select" %}
+    </div>
+    <div class="col-md-3 mb-2">
+      {% render_field form.to_amount class="form-control" %}
+    </div>
+  </div>
+  <div class="col-md-12 text-end">
+    {% render_field form.is_merchant.label_tag %}
+    {% render_field form.is_merchant %}
+    <button type="submit" class="btn btn-primary btn-lg">Convert</button>
+  </div>
+</form>

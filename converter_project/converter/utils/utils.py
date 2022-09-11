@@ -24,10 +24,12 @@ def get_best_offers_pair(currency_1, currency_2, payment_method_1,
                          ) -> Tuple[List[Offer], List[Offer]]:
     """Get 2 lists of best offers for both currencies.
 
+    Currency 1 have amount filled. Currency 2 amount need to be calculated.
     Process:
     First request gets best offers for currency with filled amount.
     Second request gets approximate price of second currency.
-    Than based of amount of USDT needed, calculates amount of second currency.
+    Than based of amount of USDT needed, calculates amount of second currency,
+    needed to make request.
     Final request gets best offers for second currency with calculated amount.
     """
     logger.debug(

@@ -1,17 +1,7 @@
 {% extends "base.html" %}
-{% load widget_tweaks %}
 {% block content %}
   <h1 class="text-center">Binance p2p currency converter</h1>
-  <form action="{% url 'converter:get_offers' %}" method="post">
-    {% csrf_token %}
-    {% include 'converter/includes/currency_select_line.html' with currency=form.from_currency payment_methods=form.from_payment_methods amount=form.from_amount hx_target='#id_from_payment_methods' line_name='From' %}
-    {% include 'converter/includes/currency_select_line.html' with currency=form.to_currency payment_methods=form.to_payment_methods amount=form.to_amount hx_target='#id_to_payment_methods' line_name='To' %}
-    <div class="col-md-12 text-end">
-      {% render_field form.is_merchant.label_tag %}
-      {% render_field form.is_merchant %}
-      <button type="submit" class="btn btn-primary btn-lg">Convert</button>
-    </div>
-  </form>
+  {% include 'converter/includes/converter_form.html' with form=form %}
   {% if offers %}
     <p class="text-center m-0">
       Best conversion rate: <em class="fw-bold fst-normal">{{ conversion_rate|floatformat:3 }}</em> {{ from_currency }}/{{ to_currency }}.
@@ -33,12 +23,8 @@
       </div>
     {% endif %}
     <div class="row align-items-center justify-content-center {% if forloop.first %}fw-bold{% endif %} ">
-      <div class="col col-md-2">
-        {% include 'converter/includes/offer.html' with offer=from_offer is_from_offers=True %}
-      </div>
-      <div class="col col-md-2">
-        {% include 'converter/includes/offer.html' with offer=to_offer is_from_offers=False %}
-      </div>
+      {% include 'converter/includes/offer.html' with offer=from_offer is_from_offers=True %}
+      {% include 'converter/includes/offer.html' with offer=to_offer is_from_offers=False %}
       {% if forloop.first %}<hr>{% endif %}
     </div>
   {% endfor %}

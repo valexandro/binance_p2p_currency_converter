@@ -77,6 +77,19 @@ def get_offers(request):
         messages.error(request, 'From and to currencies cannot be the same!')
         return render(request, template, context)
 
+    to_amount_filled = True if request.POST.get('to_amount') else False
+
+    filled_amount: float
+
+    if to_amount_filled:
+        filled_amount = float(request.POST.get('to_amount'))
+    else:
+        filled_amount = float(request.POST.get('from_amount'))
+
+    if filled_amount <= 0:
+        messages.error(request, 'Amount should be greater than zero!')
+        return render(request, template, context)
+
     if form.is_valid():
         from_currency = get_object_or_404(
             Currency,
@@ -91,10 +104,9 @@ def get_offers(request):
             PaymentMethod,
             pk=request.POST.get('to_payment_methods'))
         is_merchant = True if request.POST.get('is_merchant') else False
-        to_amount_filled = True if request.POST.get('to_amount') else False
         try:
             if to_amount_filled:
-                to_amount = float(request.POST.get('to_amount'))
+                to_amount = filled_amount
                 logger.info(
                     f'requested conversion '
                     f'{from_currency.code}'
@@ -112,7 +124,7 @@ def get_offers(request):
                 conversion_rate = best_from_price/best_to_price
                 from_amount = to_amount*conversion_rate
             else:
-                from_amount = float(request.POST.get('from_amount'))
+                from_amount = filled_amount
                 logger.info(
                     f'requested conversion '
                     f'({from_amount}){from_currency.code}'
@@ -142,7 +154,7 @@ def get_offers(request):
             'from_currency': from_currency,
         }
     messages.success(request,
-                     f'Successfully converted {from_amount} {from_currency} '
-                     f'to {to_amount} {to_currency}')
+                     f'Successfully converted {from_amount:.3f} '
+                     f'{from_currency} to {to_amount} {to_currency}')
     logger.info('offers rendered on index page.')
     return render(request, template, context)

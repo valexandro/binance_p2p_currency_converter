@@ -1,11 +1,13 @@
-<p class="m-0">
-  <a href="https://p2p.binance.com/en/advertiserDetail?advertiserNo={{ offer.seller.user_id }}">{{ offer.seller.name|slice:":10" }}</a>
-  {{ offer.seller.month_finish_rate|floatformat:1 }}%
-</p>
-<p class="m-0">
-  {% if is_from_offers %}
-    <em class="fst-normal text-danger">{{ offer.currency.code }}>USDT {{ offer.price }}</em>
-  {% else %}
-    <em class="fst-normal text-danger">USDT>{{ offer.currency.code }} {{ offer.price }}</em>
-  {% endif %}
-</p>
+<div class="col col-md-2">
+  <p class="m-0">
+    <a href="https://p2p.binance.com/en/advertiserDetail?advertiserNo={{ offer.seller.user_id }}">{{ offer.seller.name|slice:":10" }}</a>
+    {{ offer.seller.month_finish_rate|floatformat:1 }}%
+  </p>
+  <p class="m-0">
+    {% if is_from_offers %}
+      <em class="fst-normal text-danger">{{ offer.currency.code }}>USDT | {{ offer.price }}</em>
+    {% else %}
+      <em class="fst-normal text-danger">USDT>{{ offer.currency.code }} | {{ offer.price }}</em>
+    {% endif %}
+  </p>
+</div>
