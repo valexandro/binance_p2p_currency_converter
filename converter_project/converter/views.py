@@ -9,7 +9,7 @@ from .forms import ConverterForm
 from .models import Currency, PaymentMethod
 from .utils.binance_api import get_p2p_offers_data
 from .utils.json_parser import get_payment_methods_from_json
-from .utils.utils import get_best_offers_pair, get_best_price
+from .utils.utils import get_best_offers_lists, get_best_price
 
 logger = logging.getLogger(__name__)
 
@@ -114,7 +114,7 @@ def get_offers(request):
                     f'({to_amount}){to_currency.code}'
                     f'[{to_payment_method.display_name}]')
 
-                from_offers, to_offers = get_best_offers_pair(
+                from_offers, to_offers = get_best_offers_lists(
                     to_currency, from_currency, to_payment_method,
                     from_payment_method, is_merchant, to_amount,
                     to_amount_filled)
@@ -131,7 +131,7 @@ def get_offers(request):
                     f'[{from_payment_method.display_name}] -> '
                     f'{to_currency.code}[{to_payment_method.display_name}]')
 
-                to_offers, from_offers = get_best_offers_pair(
+                to_offers, from_offers = get_best_offers_lists(
                     from_currency, to_currency, from_payment_method,
                     to_payment_method, is_merchant, from_amount,
                     to_amount_filled)

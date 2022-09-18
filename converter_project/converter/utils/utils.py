@@ -18,10 +18,10 @@ def get_best_price(offers: List[Offer]) -> float:
     return offers[0].price
 
 
-def get_best_offers_pair(currency_1, currency_2, payment_method_1,
-                         payment_method_2, is_merchant, filled_amount,
-                         is_to_amount_filled
-                         ) -> Tuple[List[Offer], List[Offer]]:
+def get_best_offers_lists(currency_1, currency_2, payment_method_1,
+                          payment_method_2, is_merchant, filled_amount,
+                          is_to_amount_filled
+                          ) -> Tuple[List[Offer], List[Offer]]:
     """Get 2 lists of best offers for both currencies.
 
     Currency 1 have amount filled. Currency 2 amount need to be calculated.
@@ -67,7 +67,7 @@ def get_best_offers_pair(currency_1, currency_2, payment_method_1,
             f'requesting approx price for {currency_2.code}'
             f'[{payment_method_2.display_name}]')
 
-        single_offer_unfilled_amount_currency = (
+        single_offer_data_unfilled_amount_currency = (
             get_offers_from_json(
                 get_p2p_offers_data(
                     fiat_code=currency_2.code,
@@ -79,11 +79,10 @@ def get_best_offers_pair(currency_1, currency_2, payment_method_1,
                 ), offer_type=trade_type_2
             )
         )
-        usdt_to_sell = filled_amount/price_filled_amount_currency
-        price_unfilled_amount_currency = get_best_price(
-            single_offer_unfilled_amount_currency)
-        required_amount_of_unfilled_currency = (
-            price_unfilled_amount_currency * usdt_to_sell)
+        required_amount_of_unfilled_currency = get_amount(
+            filled_amount,
+            price_filled_amount_currency,
+            single_offer_data_unfilled_amount_currency)
 
         logger.debug(
             f'requesting best offers for'
@@ -105,3 +104,9 @@ def get_best_offers_pair(currency_1, currency_2, payment_method_1,
     except Exception as e:
         raise Exception(e) from e
     return offers_unfilled_amount_currency, offers_filled_amount_currency
+
+
+def get_amount(filled_amount_1, price_1, offers_data_2) -> float:
+    usdt_to_sell = filled_amount_1/price_1
+    price_2 = get_best_price(offers_data_2)
+    return price_2 * usdt_to_sell
