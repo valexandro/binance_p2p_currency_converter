@@ -1,10 +1,12 @@
+from unittest.mock import patch
+
 from django.test import TestCase
 
 from ..exceptions import BinanceApiError, OffersNotFoundError
 from ..models import Currency, Offer, PaymentMethod, Seller, TradeType
 from ..utils.json_parser import (get_offers_from_json,
                                  get_payment_methods_from_json)
-from ..utils.utils import get_best_price
+from ..utils.utils import get_amount, get_best_offers_lists, get_best_price
 
 
 class JsonParserTests(TestCase):
@@ -42,11 +44,12 @@ class JsonParserTests(TestCase):
             tradable_funds=350.15,
             offer_id='11395350491045543936',
         )
-        cls.test_data_path = 'test_data/SELL_10_records_RUB_mixed.json'
+        cls.test_data_path_rub = 'test_data/SELL_10_records_RUB_mixed.json'
+        cls.test_data_path_try = 'test_data/BUY_10_records_TRY_mixed.json'
         cls.fail_response_path = 'test_data/fail_method_unavailable.json'
         cls.empty_response_path = 'test_data/fail_with_success_true.json'
 
-        with open(cls.test_data_path, 'r') as file:
+        with open(cls.test_data_path_rub, 'r') as file:
             cls.rub_json_response = file.read()
 
         with open(cls.fail_response_path, 'r') as file:
@@ -154,6 +157,42 @@ class UtilsTest(TestCase):
             code='RUB',
             name='Russia Ruble',
         )
+        cls.currency_try = Currency.objects.create(
+            code='TRY',
+            name='Turkish Lira',
+        )
+        cls.payment_method_rub = PaymentMethod.objects.create(
+            short_name='TinkoffNew',
+            display_name='Tinkoff',
+            currency=cls.currency_rub,
+        )
+        cls.payment_method_try = PaymentMethod.objects.create(
+            short_name='Ziraat',
+            display_name='Ziraat',
+            currency=cls.currency_try,
+        )
+        cls.amount_rub = 2000
+        cls.is_merchant = True
+        cls.is_to_amount_filled = False
+        cls.best_rub_price = 59.79
+        cls.best_try_price = 18.35
+
+        cls.test_data_path_rub = 'test_data/SELL_10_records_RUB_mixed.json'
+        cls.test_data_path_try = 'test_data/BUY_10_records_TRY_mixed.json'
+
+        with open(cls.test_data_path_rub, 'r') as file:
+            cls.rub_json_response = file.read()
+
+        with open(cls.test_data_path_try, 'r') as file:
+            cls.try_json_response = file.read()
+
+        cls.side_effect = [cls.rub_json_response,
+                           cls.try_json_response,
+                           cls.try_json_response, ]
+
+        cls.try_offers_data = get_offers_from_json(cls.try_json_response,
+                                                   TradeType.SELL)
+
         for i in range(15):
             offer = Offer(
                 currency=cls.currency_rub,
@@ -171,5 +210,31 @@ class UtilsTest(TestCase):
         best_price = get_best_price(self.test_offers)
         self.assertEqual(best_price, self.test_offers[0].price)
 
-    def test_offers_request(self):
-        pass
+    def test_get_best_offers_lists(self):
+        """Return 2 lists of BUY and SELL offers, sorted correctly."""
+        with patch('converter.utils.utils.get_p2p_offers_data'
+                   ) as get_p2p_offers_data:
+            get_p2p_offers_data.side_effect = self.side_effect
+            list_try, list_rub = get_best_offers_lists(
+                self.currency_rub,
+                self.currency_try,
+                self.payment_method_rub,
+                self.payment_method_try,
+                self.is_merchant,
+                self.amount_rub,
+                self.is_to_amount_filled)
+            self.assertEqual(len(list_rub), 10)
+            self.assertEqual(len(list_try), 10)
+            self.assertEqual((list_rub[0].price), self.best_rub_price)
+            self.assertEqual((list_try[0].price), self.best_try_price)
+            self.assertEqual((list_rub[0].trade_type), TradeType.SELL)
+            self.assertEqual((list_try[0].trade_type), TradeType.BUY)
+
+    def test_get_amount(self):
+        """Return amount of currency_2 needed to buy currency_1."""
+        amount = get_amount(
+            self.amount_rub,
+            self.best_rub_price,
+            self.try_offers_data
+        )
+        self.assertEqual(amount, 2000/59.79*18.35)
