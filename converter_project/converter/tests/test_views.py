@@ -5,7 +5,7 @@ from django.test import Client, TestCase
 from django.urls import reverse
 
 from ..forms import ConverterForm
-from ..models import Currency
+from ..models import Currency, PaymentMethod
 
 
 class ConverterViewsTest(TestCase):
@@ -99,11 +99,7 @@ class ConverterViewsTest(TestCase):
             'utf-8'), self.test_response_try)
 
     def test_get_payment_methods_empty_response(self):
-        """Return error message in select option field.
-
-        If response empty.
-        TODO handle failed requests
-        """
+        """Return error message in select option field."""
         with patch(
                 'converter.views.get_p2p_offers_data') as get_p2p_offers_data:
             get_p2p_offers_data.return_value = self.successful_empty_response
@@ -114,11 +110,9 @@ class ConverterViewsTest(TestCase):
                 self.payment_method_not_found)
 
     def test_get_payment_methods_empty_request(self):
-        """Return error message in select option field.add()
+        """Return error message in select option field.
 
         If there is no currency parameters in request context.
-        This shouldn't normally happen.
-        TODO figure out how to handle this better.
         """
         with patch(
                 'converter.views.get_p2p_offers_data') as get_p2p_offers_data:
@@ -128,10 +122,59 @@ class ConverterViewsTest(TestCase):
                 response.content.decode('utf-8'),
                 self.empty_request_response)
 
+
+class ConverterViewsContextTest(TestCase):
+    @classmethod
+    def setUpClass(cls):
+        super().setUpClass()
+        cls.guest_client = Client()
+        cls.currency_rub = Currency.objects.create(
+            code='RUB',
+            name='Russia Ruble',
+        )
+        cls.currency_try = Currency.objects.create(
+            code='TRY',
+            name='Turkish Lira',
+        )
+        cls.payment_method_rub = PaymentMethod.objects.create(
+            short_name='TinkoffNew',
+            display_name='Tinkoff',
+            currency=cls.currency_rub,
+        )
+        cls.payment_method_try = PaymentMethod.objects.create(
+            short_name='Ziraat',
+            display_name='Ziraat',
+            currency=cls.currency_try,
+        )
+        cls.from_payment_methods_path = (
+            'test_data/SELL_10_records_RUB_mixed.json')
+        cls.to_payment_methods_path = 'test_data/BUY_10_records_TRY_mixed.json'
+
+        with open(cls.from_payment_methods_path, 'r') as file:
+            cls.from_json_response = file.read()
+        with open(cls.to_payment_methods_path, 'r') as file:
+            cls.to_json_response = file.read()
+
+        cls.side_effect = [cls.from_json_response,
+                           cls.to_json_response,
+                           cls.to_json_response, ]
+
+        cls.from_amount = 2000
+        cls.data = {'from_currency': cls.currency_rub.pk,
+                    'to_currency': cls.currency_try.pk,
+                    'from_payment_method': cls.payment_method_rub.pk,
+                    'to_payment_method': cls.payment_method_try.pk,
+                    'from_amount': cls.from_amount,
+                    'is_merchant': True, }
+
     def test_index_context(self):
         """Main page has form in context."""
         response = self.guest_client.get(reverse('converter:index'))
         self.assertIsInstance(response.context['form'], ConverterForm)
 
     def test_get_offers_context(self):
+        # Cannot figure out how to test dynamic fields
+        # form.cleaned_data does not contain dynamic values after post,
+        # saying that this fields not filled
+        # maybe its test client problem.
         pass

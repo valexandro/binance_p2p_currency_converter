@@ -15,7 +15,6 @@ logger = logging.getLogger(__name__)
 def get_payment_methods_from_json(
         response_text: str) -> QuerySet[PaymentMethod]:
     """Parse json and create missing payment methods."""
-    logger.debug('parsing payment methods from JSON')
     json_array = json.loads(response_text)
     # json_array = json.load(open(response_text))
     if not json_array['success']:
@@ -40,7 +39,6 @@ def get_payment_methods_from_json(
                 display_name=display_name,
                 currency=currency,
             )
-            logger.debug(f'parsed [{display_name}] payment method')
             counter += 1
     logger.debug(f'parsed {counter} payment methods')
     return PaymentMethod.objects.filter(
@@ -49,7 +47,6 @@ def get_payment_methods_from_json(
 
 def get_offers_from_json(response_text: str, offer_type) -> List[Offer]:
     """Parse json and create offers list."""
-    logger.debug('parsing offers from JSON')
     json_array = json.loads(response_text)
     # json_array = json.load(open(response_text))
     if not json_array['success']:
@@ -81,7 +78,6 @@ def get_offers_from_json(response_text: str, offer_type) -> List[Offer]:
                 raw_offer['advertiser']['monthOrderCount']),
             user_id=raw_offer['advertiser']['userNo']
         )
-        logger.debug(f'parsed seller [{seller}]')
         offer = Offer(
             currency=get_object_or_404(
                 Currency,
@@ -95,7 +91,6 @@ def get_offers_from_json(response_text: str, offer_type) -> List[Offer]:
             tradable_funds=float(raw_offer['adv']['surplusAmount']),
             offer_id=raw_offer['adv']['advNo'],
         )
-        logger.debug(f'parsed offer [{offer}]')
         offers.append(offer)
     logger.debug(f'parsed {len(offers)} offers')
     return offers

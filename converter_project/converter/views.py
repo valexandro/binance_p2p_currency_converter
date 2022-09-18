@@ -68,6 +68,7 @@ def get_offers(request):
     context = {
         'form': form,
     }
+
     if (not request.POST.get('to_amount')
             and not request.POST.get('from_amount')):
         messages.error(request, 'Please fill one of amount fields!')
@@ -153,6 +154,10 @@ def get_offers(request):
             'to_currency': to_currency,
             'from_currency': from_currency,
         }
+    else:
+        messages.error(request, form.errors)
+        logger.error(form.errors)
+
     messages.success(request,
                      f'Successfully converted {from_amount:.3f} '
                      f'{from_currency} to {to_amount} {to_currency}')
