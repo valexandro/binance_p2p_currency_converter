@@ -139,6 +139,8 @@ def get_offers(request):
         context = {
             'form': form,
             'offers': zip(from_offers, to_offers),
+            'from_offers': from_offers,
+            'to_offers': to_offers,
             'conversion_rate': conversion_rate,
             'to_amount': to_amount,
             'from_amount': from_amount,
@@ -152,5 +154,6 @@ def get_offers(request):
     messages.success(request,
                      f'Successfully converted {from_amount:.3f} '
                      f'{from_currency} to {to_amount} {to_currency}')
+
     logger.info('offers rendered on index page.')
     return render(request, template, context)
