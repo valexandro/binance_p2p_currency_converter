@@ -44,10 +44,14 @@ class JsonParserTests(TestCase):
             tradable_funds=350.15,
             offer_id='11395350491045543936',
         )
-        cls.test_data_path_rub = 'test_data/SELL_10_records_RUB_mixed.json'
-        cls.test_data_path_try = 'test_data/BUY_10_records_TRY_mixed.json'
-        cls.fail_response_path = 'test_data/fail_method_unavailable.json'
-        cls.empty_response_path = 'test_data/fail_with_success_true.json'
+        cls.test_data_path_rub = (
+            'converter/tests/test_data/SELL_10_records_RUB_mixed.json')
+        cls.test_data_path_try = (
+            'converter/tests/test_data/BUY_10_records_TRY_mixed.json')
+        cls.fail_response_path = (
+            'converter/tests/test_data/fail_method_unavailable.json')
+        cls.empty_response_path = (
+            'converter/tests/test_data/fail_with_success_true.json')
 
         with open(cls.test_data_path_rub, 'r') as file:
             cls.rub_json_response = file.read()
@@ -177,8 +181,10 @@ class UtilsTest(TestCase):
         cls.best_rub_price = 59.79
         cls.best_try_price = 18.35
 
-        cls.test_data_path_rub = 'test_data/SELL_10_records_RUB_mixed.json'
-        cls.test_data_path_try = 'test_data/BUY_10_records_TRY_mixed.json'
+        cls.test_data_path_rub = (
+            'converter/tests/test_data/SELL_10_records_RUB_mixed.json')
+        cls.test_data_path_try = (
+            'converter/tests/test_data/BUY_10_records_TRY_mixed.json')
 
         with open(cls.test_data_path_rub, 'r') as file:
             cls.rub_json_response = file.read()

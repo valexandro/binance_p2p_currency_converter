@@ -59,13 +59,15 @@ class ConverterViewsTest(TestCase):
             f'does not exist.</option>'
         )
         cls.successful_empty_response_path = (
-            'test_data/fail_with_success_true.json'
+            'converter/tests/test_data/fail_with_success_true.json'
         )
         cls.from_payment_methods_path = (
-            'test_data/SELL_10_records_RUB_mixed.json'
+            'converter/tests/test_data/SELL_10_records_RUB_mixed.json'
         )
-        cls.to_payment_methods_path = 'test_data/BUY_10_records_TRY_mixed.json'
-        cls.fail_response_path = 'test_data/fail_method_unavailable.json'
+        cls.to_payment_methods_path = (
+            'converter/tests/test_data/BUY_10_records_TRY_mixed.json')
+        cls.fail_response_path = (
+            'converter/tests/test_data/fail_method_unavailable.json')
 
         with open(cls.fail_response_path, 'r') as file:
             cls.fail_response = file.read()
@@ -147,9 +149,9 @@ class ConverterViewsContextTest(TestCase):
             currency=cls.currency_try,
         )
         cls.from_payment_methods_path = (
-            'test_data/SELL_10_records_RUB_mixed.json')
+            'converter/tests/test_data/SELL_10_records_RUB_mixed.json')
         cls.to_payment_methods_path = (
-            'test_data/BUY_10_records_TRY_mixed.json')
+            'converter/tests/test_data/BUY_10_records_TRY_mixed.json')
 
         with open(cls.from_payment_methods_path, 'r') as file:
             cls.from_json_response = file.read()
