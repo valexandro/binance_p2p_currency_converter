@@ -6,7 +6,7 @@ from django.shortcuts import get_object_or_404, render
 
 from .exceptions import BinanceApiError, OffersNotFoundError
 from .forms import ConverterForm
-from .models import Currency, PaymentMethod
+from .models import Currency
 from .utils.binance_api import get_p2p_offers_data
 from .utils.json_parser import get_payment_methods_from_json
 from .utils.utils import get_best_offers_lists, get_best_price
@@ -68,7 +68,6 @@ def get_offers(request):
     context = {
         'form': form,
     }
-
     if (not request.POST.get('to_amount')
             and not request.POST.get('from_amount')):
         messages.error(request, 'Please fill one of amount fields!')
@@ -92,19 +91,11 @@ def get_offers(request):
         return render(request, template, context)
 
     if form.is_valid():
-        from_currency = get_object_or_404(
-            Currency,
-            pk=request.POST.get('from_currency'))
-        to_currency = get_object_or_404(
-            Currency,
-            pk=request.POST.get('to_currency'))
-        from_payment_method = get_object_or_404(
-            PaymentMethod,
-            pk=request.POST.get('from_payment_methods'))
-        to_payment_method = get_object_or_404(
-            PaymentMethod,
-            pk=request.POST.get('to_payment_methods'))
-        is_merchant = True if request.POST.get('is_merchant') else False
+        from_currency = form.cleaned_data.get('from_currency')
+        to_currency = form.cleaned_data.get('to_currency')
+        from_payment_method = form.cleaned_data.get('from_payment_methods')
+        to_payment_method = form.cleaned_data.get('to_payment_methods')
+        is_merchant = form.cleaned_data.get('is_merchant')
         try:
             if to_amount_filled:
                 to_amount = filled_amount

@@ -177,4 +177,5 @@ class ConverterViewsContextTest(TestCase):
         # form.cleaned_data does not contain dynamic values after post,
         # saying that this fields not filled
         # maybe its test client problem.
+        # response = self.guest_client.post('/get_offers/', self.data)
         pass
