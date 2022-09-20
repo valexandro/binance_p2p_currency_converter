@@ -146,7 +146,7 @@ class JsonParserTests(TestCase):
 
 
 class UtilsTest(TestCase):
-    @ classmethod
+    @classmethod
     def setUpClass(cls):
         super().setUpClass()
         cls.test_offers = []
@@ -180,6 +180,9 @@ class UtilsTest(TestCase):
         cls.is_to_amount_filled = False
         cls.best_rub_price = 59.79
         cls.best_try_price = 18.35
+        cls.num_of_offers = 10
+        cls.unknown_amount = (
+            cls.amount_rub/cls.best_rub_price*cls.best_try_price)
 
         cls.test_data_path_rub = (
             'converter/tests/test_data/SELL_10_records_RUB_mixed.json')
@@ -229,8 +232,8 @@ class UtilsTest(TestCase):
                 self.is_merchant,
                 self.amount_rub,
                 self.is_to_amount_filled)
-            self.assertEqual(len(list_rub), 10)
-            self.assertEqual(len(list_try), 10)
+            self.assertEqual(len(list_rub), self.num_of_offers)
+            self.assertEqual(len(list_try), self.num_of_offers)
             self.assertEqual((list_rub[0].price), self.best_rub_price)
             self.assertEqual((list_try[0].price), self.best_try_price)
             self.assertEqual((list_rub[0].trade_type), TradeType.SELL)
@@ -243,4 +246,4 @@ class UtilsTest(TestCase):
             self.best_rub_price,
             self.try_offers_data
         )
-        self.assertEqual(amount, 2000/59.79*18.35)
+        self.assertEqual(amount, self.unknown_amount)

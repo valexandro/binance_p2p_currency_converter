@@ -12,7 +12,7 @@ logger = logging.getLogger(__name__)
 def get_best_price(offers: List[Offer]) -> float:
     """Get best price of currency in list of orders.
 
-    Orders already sorted properly after request.
+    Orders already sorted properly after parsing.
     """
     logger.debug('getting best price from list of offers')
     return offers[0].price
@@ -107,6 +107,10 @@ def get_best_offers_lists(currency_1, currency_2, payment_method_1,
 
 
 def get_amount(filled_amount_1, price_1, offers_data_2) -> float:
+    """Get max amount of currency 2 can be traded for set amount of currency 1.
+
+    Buy USDT foe set amount of currency 1. Than sell USDT for currency 2.
+    """
     usdt_to_sell = filled_amount_1/price_1
     price_2 = get_best_price(offers_data_2)
     return price_2 * usdt_to_sell

@@ -4,7 +4,8 @@ from django.contrib import messages
 from django.http import HttpResponse
 from django.shortcuts import get_object_or_404, render
 
-from .exceptions import BinanceApiError, OffersNotFoundError
+from .exceptions import (ApiUnavailableError, BinanceApiError,
+                         OffersNotFoundError)
 from .forms import ConverterForm
 from .models import Currency
 from .utils.binance_api import get_p2p_offers_data
@@ -45,8 +46,11 @@ def get_payment_methods(request) -> HttpResponse:
             currency = get_object_or_404(
                 Currency, pk=request.GET.get(currency_type))
             logger.info(f'requested payment methods for {currency.code}')
-            json = get_p2p_offers_data(
-                fiat_code=currency.code, is_merchant=True, rows=10)
+            try:
+                json = get_p2p_offers_data(
+                    fiat_code=currency.code, is_merchant=True, rows=10)
+            except ApiUnavailableError as e:
+                return HttpResponse(f'<option>{e}</option>')
             try:
                 get_payment_methods_from_json(json)
             except OffersNotFoundError:
@@ -54,7 +58,7 @@ def get_payment_methods(request) -> HttpResponse:
                 return HttpResponse(error_message.format(currency.code))
             except BinanceApiError as e:
                 logger.error(e)
-                return HttpResponse('<option>Request Failed</option>')
+                return HttpResponse(f'<option>{e}</option>')
             return HttpResponse(form[payment_method])
     logger.error('HTMX created empty request.')
     return HttpResponse('<option value="">---------</option>')
@@ -68,34 +72,17 @@ def get_offers(request):
     context = {
         'form': form,
     }
-    if (not request.POST.get('to_amount')
-            and not request.POST.get('from_amount')):
-        messages.error(request, 'Please fill one of amount fields!')
-        return render(request, template, context)
-
-    if request.POST.get('from_currency') == request.POST.get('to_currency'):
-        messages.error(request, 'From and to currencies cannot be the same!')
-        return render(request, template, context)
-
-    to_amount_filled = True if request.POST.get('to_amount') else False
-
-    filled_amount: float
-
-    if to_amount_filled:
-        filled_amount = float(request.POST.get('to_amount'))
-    else:
-        filled_amount = float(request.POST.get('from_amount'))
-
-    if filled_amount <= 0:
-        messages.error(request, 'Amount should be greater than zero!')
-        return render(request, template, context)
 
     if form.is_valid():
+        to_amount_filled = True if form.cleaned_data.get(
+            'to_amount') else False
         from_currency = form.cleaned_data.get('from_currency')
         to_currency = form.cleaned_data.get('to_currency')
         from_payment_method = form.cleaned_data.get('from_payment_methods')
         to_payment_method = form.cleaned_data.get('to_payment_methods')
         is_merchant = form.cleaned_data.get('is_merchant')
+        filled_amount = (form.cleaned_data.get('to_amount') if to_amount_filled
+                         else form.cleaned_data.get('from_amount'))
         try:
             if to_amount_filled:
                 to_amount = filled_amount
@@ -147,13 +134,13 @@ def get_offers(request):
             'to_currency': to_currency,
             'from_currency': from_currency,
         }
+        messages.success(request,
+                         f'Successfully converted {from_amount:.3f} '
+                         f'{from_currency} to {to_amount} {to_currency}')
+
+        logger.info('offers rendered on index page.')
+        return render(request, template, context)
     else:
         messages.error(request, form.errors)
         logger.error(form.errors)
-
-    messages.success(request,
-                     f'Successfully converted {from_amount:.3f} '
-                     f'{from_currency} to {to_amount} {to_currency}')
-
-    logger.info('offers rendered on index page.')
-    return render(request, template, context)
+        return render(request, template, context)

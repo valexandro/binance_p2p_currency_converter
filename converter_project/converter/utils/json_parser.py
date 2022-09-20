@@ -16,7 +16,6 @@ def get_payment_methods_from_json(
         response_text: str) -> QuerySet[PaymentMethod]:
     """Parse json and create missing payment methods."""
     json_array = json.loads(response_text)
-    # json_array = json.load(open(response_text))
     if not json_array['success']:
         raise BinanceApiError(json_array['message'])
 
@@ -46,9 +45,8 @@ def get_payment_methods_from_json(
 
 
 def get_offers_from_json(response_text: str, offer_type) -> List[Offer]:
-    """Parse json and create offers list."""
+    """Parse json and create offers list sorted by price."""
     json_array = json.loads(response_text)
-    # json_array = json.load(open(response_text))
     if not json_array['success']:
         logger.error('request unsuccessful')
         raise BinanceApiError(json_array['message'])
