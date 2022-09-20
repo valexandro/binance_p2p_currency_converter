@@ -63,7 +63,9 @@ def get_offers_from_json(response_text: str, offer_type) -> List[Offer]:
     else:
         logger.debug('sorting payment methods descending')
         raw_offers.sort(key=lambda x: x['adv']['price'], reverse=True)
+
     offers: List[Offer] = []
+
     for raw_offer in raw_offers:
         seller: Seller = Seller(
             name=raw_offer['advertiser']['nickName'],
