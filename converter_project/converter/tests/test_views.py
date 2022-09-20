@@ -163,24 +163,44 @@ class ConverterViewsContextTest(TestCase):
                            cls.to_json_response, ]
 
         cls.from_amount = 2000
-        cls.data = {'from_currency': cls.currency_rub.pk,
-                    'to_currency': cls.currency_try.pk,
-                    'from_payment_methods': cls.payment_method_rub.pk,
-                    'to_payment_methods': cls.payment_method_try.pk,
-                    'from_amount': cls.from_amount,
-                    'is_merchant': True, }
+        cls.conversion_rate = 59.79/18.35
+        cls.to_amount = cls.from_amount/cls.conversion_rate
+        cls.num_of_offers = 10
+
+        cls.data = {
+            'from_currency': cls.currency_rub.pk,
+            'to_currency': cls.currency_try.pk,
+            'from_payment_methods': cls.payment_method_rub.pk,
+            'to_payment_methods': cls.payment_method_try.pk,
+            'from_amount': cls.from_amount,
+            'is_merchant': True, }
 
     def test_index_context(self):
-        """Main page has form in context."""
+        """Main page initial context."""
         response = self.guest_client.get(reverse('converter:index'))
         self.assertIsInstance(response.context['form'], ConverterForm)
 
     def test_get_offers_context(self):
+        """Main page context after successful request."""
         with patch('converter.utils.utils.get_p2p_offers_data'
                    ) as get_p2p_offers_data:
             get_p2p_offers_data.side_effect = self.side_effect
             response = self.guest_client.post(
                 reverse('converter:get_offers'), self.data)
 
-            self.assertEqual(len(response.context['from_offers']), 10)
-            self.assertEqual(len(response.context['to_offers']), 10)
+            self.assertIsInstance(response.context.get(
+                'form'), ConverterForm)
+            self.assertEqual(len(response.context.get(
+                'from_offers')), self.num_of_offers)
+            self.assertEqual(len(response.context.get(
+                'to_offers')), self.num_of_offers)
+            self.assertEqual(response.context.get(
+                'conversion_rate'), self.conversion_rate)
+            self.assertEqual(response.context.get(
+                'from_amount'), self.from_amount)
+            self.assertEqual(response.context.get(
+                'to_amount'), self.to_amount)
+            self.assertEqual(response.context.get(
+                'from_currency'), self.currency_rub)
+            self.assertEqual(response.context.get(
+                'to_currency'), self.currency_try)
