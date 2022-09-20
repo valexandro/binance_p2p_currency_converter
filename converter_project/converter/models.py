@@ -63,7 +63,7 @@ class Seller():
     name: str
     is_merchant: bool
     month_finish_rate: float
-    month_orders_count: int
+    month_orders_count: float
     user_id: str
 
     def __str__(self) -> str:
@@ -85,7 +85,7 @@ class Offer():
     seller: Seller
     trade_type: TradeType
     price: float
-    min_amount: int
+    min_amount: float
     tradable_funds: float
     offer_id: str
 
