@@ -10,7 +10,7 @@ from .forms import ConverterForm
 from .models import Currency
 from .utils.binance_api import get_p2p_offers_data
 from .utils.json_parser import get_payment_methods_from_json
-from .utils.utils import get_best_offers_lists, get_best_price
+from .utils.offers_utils import get_best_offers_lists, get_best_price
 
 logger = logging.getLogger(__name__)
 

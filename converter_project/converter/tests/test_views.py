@@ -182,7 +182,7 @@ class ConverterViewsContextTest(TestCase):
 
     def test_get_offers_context(self):
         """Main page context after successful request."""
-        with patch('converter.utils.utils.get_p2p_offers_data'
+        with patch('converter.utils.offers_utils.get_p2p_offers_data'
                    ) as get_p2p_offers_data:
             get_p2p_offers_data.side_effect = self.side_effect
             response = self.guest_client.post(

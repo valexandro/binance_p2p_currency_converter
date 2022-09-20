@@ -6,7 +6,8 @@ from ..exceptions import BinanceApiError, OffersNotFoundError
 from ..models import Currency, Offer, PaymentMethod, Seller, TradeType
 from ..utils.json_parser import (get_offers_from_json,
                                  get_payment_methods_from_json)
-from ..utils.utils import get_amount, get_best_offers_lists, get_best_price
+from ..utils.offers_utils import (get_amount, get_best_offers_lists,
+                                  get_best_price)
 
 
 class JsonParserTests(TestCase):
@@ -221,7 +222,7 @@ class UtilsTest(TestCase):
 
     def test_get_best_offers_lists(self):
         """Return 2 lists of BUY and SELL offers, sorted correctly."""
-        with patch('converter.utils.utils.get_p2p_offers_data'
+        with patch('converter.utils.offers_utils.get_p2p_offers_data'
                    ) as get_p2p_offers_data:
             get_p2p_offers_data.side_effect = self.side_effect
             list_try, list_rub = get_best_offers_lists(
