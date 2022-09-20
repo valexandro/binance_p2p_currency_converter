@@ -1,16 +1,14 @@
 """Methods to work with Binance api."""
 
 import logging
+from http import HTTPStatus
 
 import requests
 
+from ..exceptions import ApiUnavailableError
 from ..models import TradeType
 
 logger = logging.getLogger(__name__)
-# PATHS = {
-#     'RUB': '/home/shark1501/dev/p2p_converter/converter_project/test_data/SELL_10_records_RUB_mixed.json',
-#     'TRY': '/home/shark1501/dev/p2p_converter/converter_project/test_data/BUY_10_records_TRY_mixed.json',
-# }
 
 
 def get_p2p_offers_data(fiat_code: str,
@@ -67,5 +65,12 @@ def get_p2p_offers_data(fiat_code: str,
         'https://p2p.binance.com/bapi/c2c/v2/friendly/c2c/adv/search',
         headers=headers,
         json=data)
+
+    if response.status_code != HTTPStatus.OK:
+        error_message = (
+            f'Binance P2P Api Unavailable. '
+            f'Status code: {response.status_code}')
+        logger.exception(error_message)
+        raise ApiUnavailableError(error_message)
+
     return response.text
-    # return PATHS[fiat_code]
