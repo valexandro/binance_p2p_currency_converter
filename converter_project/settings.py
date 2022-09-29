@@ -96,7 +96,6 @@ LOGGING = {
         'level': 'DEBUG'
     }
 }
-WSGI_APPLICATION = 'p2p_converter.wsgi.application'
 
 ROOT_URLCONF = 'converter_project.urls'
 # STATICFILES_DIRS = [str(BASE_DIR / 'static'), ]
