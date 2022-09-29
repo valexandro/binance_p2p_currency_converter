@@ -99,7 +99,7 @@ LOGGING = {
 
 
 ROOT_URLCONF = 'converter_project.urls'
-STATICFILES_DIRS = [str(BASE_DIR / 'static'), ]
+# STATICFILES_DIRS = [str(BASE_DIR / 'static'), ]
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
