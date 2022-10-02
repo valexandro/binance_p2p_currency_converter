@@ -17,19 +17,22 @@ def get_payment_methods_from_json(
     """Parse json and create missing payment methods."""
     json_array = json.loads(response_text)
     if not json_array['success']:
+        logger.error(json_array['message'])
         raise BinanceApiError(json_array['message'])
 
     raw_offers = json_array['data']
 
     if not raw_offers:
+        logger.error('response.data is empty')
         raise OffersNotFoundError('Offers not found.')
 
     counter = 0
     for raw_offer in raw_offers:
-        trade_methods = raw_offer['adv']['tradeMethods']
+        offer_data = raw_offer['adv']
+        trade_methods = offer_data['tradeMethods']
         currency: Currency = get_object_or_404(
             Currency,
-            code=raw_offer['adv']['fiatUnit'])
+            code=offer_data['fiatUnit'])
         for trade_method in trade_methods:
             short_name = trade_method['identifier']
             display_name = trade_method['tradeMethodName']
@@ -48,13 +51,13 @@ def get_offers_from_json(response_text: str, offer_type) -> List[Offer]:
     """Parse json and create offers list sorted by price."""
     json_array = json.loads(response_text)
     if not json_array['success']:
-        logger.error('request unsuccessful')
+        logger.error(json_array['message'])
         raise BinanceApiError(json_array['message'])
 
     raw_offers = json_array['data']
 
     if not raw_offers:
-        logger.error('request empty')
+        logger.error('response.data is empty')
         raise OffersNotFoundError('Offers not found.')
 
     if offer_type == TradeType.BUY:
@@ -67,29 +70,31 @@ def get_offers_from_json(response_text: str, offer_type) -> List[Offer]:
     offers: List[Offer] = []
 
     for raw_offer in raw_offers:
+        seller_data = raw_offer['advertiser']
         seller: Seller = Seller(
-            name=raw_offer['advertiser']['nickName'],
+            name=seller_data['nickName'],
             is_merchant=(
-                True if raw_offer['advertiser']['userType'] == 'merchant'
+                True if seller_data['userType'] == 'merchant'
                 else False),
             month_finish_rate=float(
-                raw_offer['advertiser']['monthFinishRate'])*100,
+                seller_data['monthFinishRate'])*100,
             month_orders_count=float(
-                raw_offer['advertiser']['monthOrderCount']),
-            user_id=raw_offer['advertiser']['userNo']
+                seller_data['monthOrderCount']),
+            user_id=seller_data['userNo']
         )
+        offer_data = raw_offer['adv']
         offer = Offer(
             currency=get_object_or_404(
                 Currency,
-                code=raw_offer['adv']['fiatUnit']),
+                code=offer_data['fiatUnit']),
             seller=seller,
             trade_type=(
-                TradeType.BUY if raw_offer['adv']['tradeType'] == 'BUY'
+                TradeType.BUY if offer_data['tradeType'] == 'BUY'
                 else TradeType.SELL),
-            price=float(raw_offer['adv']['price']),
-            min_amount=float(raw_offer['adv']['minSingleTransAmount']),
-            tradable_funds=float(raw_offer['adv']['surplusAmount']),
-            offer_id=raw_offer['adv']['advNo'],
+            price=float(offer_data['price']),
+            min_amount=float(offer_data['minSingleTransAmount']),
+            tradable_funds=float(offer_data['surplusAmount']),
+            offer_id=offer_data['advNo'],
         )
         offers.append(offer)
     logger.debug(f'parsed {len(offers)} offers')
