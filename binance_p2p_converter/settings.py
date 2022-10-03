@@ -37,6 +37,7 @@ MESSAGE_TAGS = {
     messages.ERROR: 'alert-danger',
 }
 ALLOWED_HOSTS = [
+    'binance-p2p-converter.herokuapp.com',
     'localhost',
     '127.0.0.1',
 ]
