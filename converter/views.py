@@ -48,7 +48,7 @@ def get_payment_methods(request) -> HttpResponse:
             logger.info(f'requested payment methods for {currency.code}')
             try:
                 json = get_p2p_offers_data(
-                    fiat_code=currency.code, is_merchant=True, rows=10)
+                    fiat_code=currency.code, is_merchant=True, rows=20)
             except ApiUnavailableError as e:
                 return HttpResponse(f'<option>{e}</option>')
             try:
