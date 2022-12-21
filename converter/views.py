@@ -7,7 +7,7 @@ from django.shortcuts import get_object_or_404, render
 from .exceptions import (ApiUnavailableError, BinanceApiError,
                          OffersNotFoundError)
 from .forms import ConverterForm
-from .models import Currency
+from .models import Currency, TradeType
 from .utils.binance_api import get_p2p_offers_data
 from .utils.json_parser import get_payment_methods_from_json
 from .utils.offers_utils import get_best_offers_lists, get_best_price
@@ -47,12 +47,15 @@ def get_payment_methods(request) -> HttpResponse:
                 Currency, pk=request.GET.get(currency_type))
             logger.info(f'requested payment methods for {currency.code}')
             try:
-                json = get_p2p_offers_data(
-                    fiat_code=currency.code, is_merchant=True, rows=20)
+                json_buy = get_p2p_offers_data(
+                    fiat_code=currency.code, is_merchant=True, trade_type=TradeType.BUY, rows=10)
+                json_sell = get_p2p_offers_data(
+                    fiat_code=currency.code, is_merchant=True, trade_type=TradeType.SELL, rows=10)
             except ApiUnavailableError as e:
                 return HttpResponse(f'<option>{e}</option>')
             try:
-                get_payment_methods_from_json(json)
+                get_payment_methods_from_json(json_buy)
+                get_payment_methods_from_json(json_sell)
             except OffersNotFoundError:
                 logger.info(f'no payment methods found for {currency.code}')
                 return HttpResponse(error_message.format(currency.code))
