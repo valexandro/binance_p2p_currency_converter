@@ -1,6 +1,9 @@
-# Binance P2P currency converter
-## _Converts fiat currencies thru buying and selling USDT_
+# Binance P2P Currency Converter
+Контвертер фиатных валют через покупку и продажу USDT на бирже Binance.
+Использует недокументированное Binance апи.
 
-[![Build Status](https://travis-ci.org/joemccann/dillinger.svg?branch=master)](https://travis-ci.org/joemccann/dillinger)
-
-## Features
+## Технологии
+- Python 3.7
+- Django 2.2.16
+- PostgreSQL
+- HTMX
