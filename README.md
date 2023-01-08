@@ -17,9 +17,12 @@
 ```
 git clone git@github.com:valexandro/binance_p2p_currency_converter.git
 ```
-### Создать виртуальное окружение и установить зависимости
+### Создать и активировать виртуальное окружение, установить зависимости
 ```
 python3.7 -m venv venv
+source venv/bin/activate
+pip install --upgrade pip
+pip install -r requirements.txt
 ```
 ### Выполнить миграции
 ```
