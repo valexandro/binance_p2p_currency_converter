@@ -30,3 +30,7 @@ python manage.py migrate
 ```
 python manage.py load_data
 ```
+### Запуск
+```
+python manage.py runserver
+```
