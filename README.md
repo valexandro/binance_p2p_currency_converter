@@ -14,14 +14,19 @@
 Локально
 
 ### Клонировать репозиторий
-'''
-xxx
-'''
+```
+git clone git@github.com:valexandro/binance_p2p_currency_converter.git
+```
+### Создать виртуальное окружение и установить зависимости
+```
+python3.7 -m venv venv
+```
 ### Выполнить миграции
-'''
-xxx
-'''
+```
+python manage.py makemigrations
+python manage.py migrate
+```
 ### Заполнить базу данных валют
-'''
-xxx
-'''
+```
+python manage.py load_data
+```
