@@ -30,7 +30,6 @@ SECRET_KEY = os.getenv('SECRET')
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = False
 
-ALLOWED_HOSTS = []
 MESSAGE_TAGS = {
     messages.DEBUG: 'alert-info',
     messages.INFO: 'alert-info',
@@ -39,7 +38,6 @@ MESSAGE_TAGS = {
     messages.ERROR: 'alert-danger',
 }
 ALLOWED_HOSTS = [
-    'binance-p2p-converter.herokuapp.com',
     'localhost',
     '127.0.0.1',
 ]
