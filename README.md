@@ -24,7 +24,7 @@ source venv/bin/activate
 pip install --upgrade pip
 pip install -r requirements.txt
 ```
-### Создать .env файл в папке binance_p2p_converter со следующими параметрами
+### Создать .env файл в папке /binance_p2p_converter со следующими параметрами
 ```
 SECRET=... # секретный ключ Джанго. https://djecrety.ir/
 ```
